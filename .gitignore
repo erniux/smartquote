@@ -1,0 +1,94 @@
+# ========================================
+# 🧠 SmartQuote - .gitignore
+# ========================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ---- Django ----
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# ---- Environment ----
+.env
+.env.*
+!example.env
+
+# ---- IDEs & Editors ----
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ---- OS Specific ----
+.DS_Store
+Thumbs.db
+
+# ---- Docker ----
+# Evita subir archivos de entorno o caches
+**/__pycache__/
+*.pid
+*.seed
+*.pid.lock
+*.swp
+*.bak
+*.tmp
+*.log
+*.tar
+*.gz
+*.zip
+
+# Evita las carpetas de volumenes y datos locales
+postgres_data/
+docker-compose.override.yml
+
+# ---- Virtualenv ----
+venv/
+env/
+ENV/
+.virtualenv/
+.venv/
+
+# ---- Node / Frontend ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+coverage/
+
+# ---- Reports / Tests ----
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+.cache
+nosetests.xml
+coverage.xml
+*.pytest_cache/
+test_results/
+
+# ---- PDF / Files ----
+*.pdf
+*.docx
+*.xlsx
+*.csv
+
+# ---- Other ----
+*.tmp
+*.swp
+*.bak
+*.orig
+*.rej

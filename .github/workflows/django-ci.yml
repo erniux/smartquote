@@ -1,0 +1,46 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        ports: ['5432:5432']
+        env:
+          POSTGRES_DB: smartquote
+          POSTGRES_USER: erna
+          POSTGRES_PASSWORD: secret123
+        options: >-
+          --health-cmd="pg_isready -U erna -d smartquote"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_NAME: smartquote
+      DATABASE_USER: erna
+      DATABASE_PASSWORD: secret123
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 5432
+      DEBUG: False
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Run tests
+        run: |
+          cd backend
+          python manage.py test
