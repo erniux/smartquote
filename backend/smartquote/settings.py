@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "core",
     "services",
     "quotations",
+    "companies",
+    "sales",
 ]
 
 # -----------------------------

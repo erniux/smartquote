@@ -1,0 +1,51 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block object-tools %}
+  {{ block.super }}
+  {% if recalculate_url %}
+  <style>
+    .refresh-button {
+      background: linear-gradient(135deg, #007bff, #00bcd4);
+      color: white !important;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease-in-out;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+    .refresh-button:hover {
+      background: linear-gradient(135deg, #00bcd4, #007bff);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+    }
+    .refresh-icon {
+      display: inline-block;
+      animation: spin 2s linear infinite;
+      animation-play-state: paused;
+    }
+    .refresh-button:hover .refresh-icon {
+      animation-play-state: running;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <ul class="object-tools">
+    {% if recalculate_url %}
+      <li><a href="{{ recalculate_url }}" class="refresh-button">🔄 Recalcular precios</a></li>
+    {% endif %}
+    {% if pdf_url %}
+      <li><a href="{{ pdf_url }}" class="refresh-button" style="background:linear-gradient(135deg,#28a745,#20c997);">
+        📄 Descargar PDF
+      </a></li>
+    {% endif %}
+  </ul>
+  {% endif %}
+{% endblock %}

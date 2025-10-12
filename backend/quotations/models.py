@@ -3,6 +3,7 @@ from django.utils import timezone
 from decimal import Decimal
 from core.models import Product
 from services.models import MetalPrice, CurrencyRate
+from companies.models import Company
 
 
 class Quotation(models.Model):
@@ -14,9 +15,26 @@ class Quotation(models.Model):
     tax = models.DecimalField("IVA (%)", max_digits=5, decimal_places=2, default=16)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     notes = models.TextField("Notas", blank=True, null=True)
-
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="quotations",
+        verbose_name="Empresa emisora"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(
+    max_length=20,
+    choices=[
+        ("draft", "Borrador"),
+        ("confirmed", "Confirmada"),
+        ("cancelled", "Cancelada"),
+    ],
+    default="draft"
+)
+
 
     def __str__(self):
         return f"Cotización #{self.id} - {self.customer_name}"
@@ -56,6 +74,21 @@ class Quotation(models.Model):
         self.subtotal = subtotal
         self.total = subtotal + (subtotal * self.tax / Decimal("100"))
         self.save()
+
+    def confirm(self):
+        """Confirma la cotización y crea una venta asociada."""
+        from sales.models import Sale
+        if not hasattr(self, "sale"):
+            sale = Sale.objects.create(
+                quotation=self,
+                total_amount=self.total,
+            )
+            sale.set_delivery_and_warranty()
+            self.status = "confirmed"
+            self.save()
+            return sale
+        return self.sale
+
 
 
 class QuotationItem(models.Model):
