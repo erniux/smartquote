@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Factura {{ invoice_number }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 {
+      color: #1a73e8;
+    }
+    p {
+      line-height: 1.6;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+    }
+    .total {
+      background-color: #f1f9ff;
+      border: 1px solid #cfe2ff;
+      padding: 10px;
+      margin-top: 20px;
+      text-align: right;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Factura {{ invoice_number }}</h2>
+
+    <p>Hola <strong>{{ customer }}</strong>,</p>
+
+    <p>Te enviamos la factura <strong>{{ invoice_number }}</strong> correspondiente a tu compra reciente.</p>
+
+    <div class="total">
+      <strong>Total:</strong> {{ total }} <br/>
+      <small>Fecha de emisión: {{ issue_date }}</small>
+    </div>
+
+    <p>Adjuntamos el PDF de la factura para tu registro.</p>
+
+    <p>Gracias por confiar en <b>La Esmeralda de la Decoración</b>.</p>
+
+    <div class="footer">
+      Documento generado automáticamente por <b>SmartQuote</b> © 2025
+    </div>
+  </div>
+</body>
+</html>

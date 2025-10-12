@@ -2,7 +2,8 @@ from django.contrib import admin, messages
 from django.urls import path, reverse
 from django.shortcuts import redirect
 from quotations.pdf_utils import generate_quotation_pdf
-from quotations.models import Quotation, QuotationItem
+from quotations.models import Quotation, QuotationItem, QuotationExpense
+from decimal import Decimal,ROUND_HALF_UP
 
 
 class QuotationItemInline(admin.TabularInline):
@@ -11,12 +12,18 @@ class QuotationItemInline(admin.TabularInline):
     readonly_fields = ["unit_price"]
     can_delete = False
 
+class QuotationExpenseInline(admin.TabularInline):
+    model = QuotationExpense
+    extra = 1
+    readonly_fields = ["total_cost"]
+    can_delete = True
+
 
 @admin.register(Quotation)
 class QuotationAdmin(admin.ModelAdmin):
     list_display = ("id", "customer_name", "currency", "subtotal", "total", "date", "updated_at")
     list_filter = ("currency", "date")
-    inlines = [QuotationItemInline]
+    inlines = [QuotationItemInline, QuotationExpenseInline]
     actions = ["recalculate_prices_action", "confirm_quotation_action"]
 
 
@@ -88,6 +95,8 @@ class QuotationAdmin(admin.ModelAdmin):
         extra_context["recalculate_url"] = recalc_url
         extra_context["pdf_url"] = pdf_url
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
+    
+
 
 
 

@@ -1,19 +1,20 @@
 from django.db import models
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from core.models import Product
 from services.models import MetalPrice, CurrencyRate
 from companies.models import Company
 
+MONEY_FIELD = dict(max_digits=14, decimal_places=2, default=0)
 
 class Quotation(models.Model):
     customer_name = models.CharField("Cliente", max_length=100)
     customer_email = models.EmailField("Correo del cliente", blank=True, null=True)
     date = models.DateField("Fecha", default=timezone.now)
     currency = models.CharField("Moneda", max_length=10, default="MXN")
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    tax = models.DecimalField("IVA (%)", max_digits=5, decimal_places=2, default=16)
-    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    subtotal = models.DecimalField(**MONEY_FIELD)
+    tax = models.DecimalField("IVA (%)", **MONEY_FIELD)
+    total = models.DecimalField(**MONEY_FIELD)
     notes = models.TextField("Notas", blank=True, null=True)
     company = models.ForeignKey(
         Company,
@@ -39,41 +40,45 @@ class Quotation(models.Model):
     def __str__(self):
         return f"Cotización #{self.id} - {self.customer_name}"
 
+    from decimal import Decimal, ROUND_HALF_UP
+
     def calculate_totals(self):
-        subtotal = Decimal("0.00")
-        exchange_rate = Decimal("1.00")
+        """
+        Calcula el subtotal, impuestos y total general de la cotización.
+        Incluye tanto productos (QuotationItem) como insumos/servicios (QuotationExpense).
+        """
 
-        # Obtener tasa de cambio si no es USD
-        if self.currency != "USD":
-            try:
-                rate = CurrencyRate.objects.filter(
-                    base_currency="USD",
-                    target_currency=self.currency
-                ).latest("last_updated")
-                exchange_rate = rate.rate
-            except CurrencyRate.DoesNotExist:
-                print("⚠️ No hay tasa de cambio actualizada, usando 1.00")
+        # --- Subtotales individuales ---
+        subtotal_items = Decimal("0.00")
+        subtotal_expenses = Decimal("0.00")
 
+        # 🧱 Productos principales
         for item in self.items.all():
-            product = item.product
-            unit_price_usd = Decimal(product.price)
+            subtotal_items += Decimal(item.quantity) * Decimal(item.unit_price)
 
-            # Si tiene metal_symbol, actualiza con precio real
-            if product.metal_symbol:
-                metal = MetalPrice.objects.filter(symbol=product.metal_symbol).order_by("-last_updated").first()
-                if metal:
-                    unit_price_usd = Decimal(metal.price_usd)
+        # 🧰 Insumos y servicios asociados
+        if hasattr(self, "expenses"):
+            for exp in self.expenses.all():
+                subtotal_expenses += Decimal(exp.total_cost or 0)
 
-            # Convertir a moneda local
-            unit_price_local = unit_price_usd * exchange_rate
-            item.unit_price = unit_price_local
-            item.save()
+        # --- Subtotal general ---
+        subtotal = subtotal_items + subtotal_expenses
 
-            subtotal += item.unit_price * item.quantity
+        # --- Impuesto (IVA 16%) ---
+        tax_rate = Decimal("0.16")
+        tax = (subtotal * tax_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        self.subtotal = subtotal
-        self.total = subtotal + (subtotal * self.tax / Decimal("100"))
-        self.save()
+        # --- Total general ---
+        total = (subtotal + tax).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # --- Guardar en el modelo ---
+        self.subtotal = subtotal.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        self.tax = tax.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        self.total = total
+        self.save(update_fields=["subtotal", "tax", "total"])
+
+        return subtotal, tax, total
+
 
     def confirm(self):
         """Confirma la cotización y crea una venta asociada."""
@@ -95,7 +100,33 @@ class QuotationItem(models.Model):
     quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    unit_price = models.DecimalField(**MONEY_FIELD)
 
     def __str__(self):
         return f"{self.quantity} × {self.product.name}"
+
+
+
+class QuotationExpense(models.Model):
+    quotation = models.ForeignKey("Quotation", on_delete=models.CASCADE, related_name="expenses")
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    quantity = models.DecimalField(**MONEY_FIELD)
+    unit_cost = models.DecimalField(**MONEY_FIELD)
+    total_cost = models.DecimalField(**MONEY_FIELD)
+
+    CATEGORY_CHOICES = [
+        ("material", "Material"),
+        ("service", "Servicio"),
+        ("labor", "Mano de obra"),
+        ("other", "Otro"),
+    ]
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="other")
+
+    def save(self, *args, **kwargs):
+        self.total_cost = self.quantity * self.unit_cost
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+

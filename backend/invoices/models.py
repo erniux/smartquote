@@ -11,8 +11,6 @@ class Invoice(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2)
     pdf_file = models.FileField(upload_to="invoices/pdfs/", blank=True, null=True)
 
-    def __str__(self):
-        return f"Factura {self.invoice_number} - {self.sale.quotation.customer_name}"
 
     @staticmethod
     def next_invoice_number():
@@ -22,3 +20,7 @@ class Invoice(models.Model):
             return "INV-0001"
         last_num = int(last.invoice_number.split("-")[1])
         return f"INV-{last_num+1:04d}"
+    
+    def __str__(self):
+        return f"Factura {self.invoice_number} - {self.sale.quotation.customer_name}"
+

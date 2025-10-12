@@ -2,6 +2,8 @@ from django.db import models
 from quotations.models import Quotation
 from datetime import timedelta, date
 
+MONEY_FIELD = dict(max_digits=14, decimal_places=2, default=0)
+
 class Sale(models.Model):
     quotation = models.OneToOneField(
         Quotation,
@@ -10,7 +12,7 @@ class Sale(models.Model):
         verbose_name="Cotización origen"
     )
     sale_date = models.DateField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    total_amount = models.DecimalField(**MONEY_FIELD)
     status = models.CharField(
         max_length=20,
         choices=[
@@ -50,7 +52,7 @@ class Sale(models.Model):
 class Payment(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name="payments")
     payment_date = models.DateField(auto_now_add=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(**MONEY_FIELD)
     method = models.CharField(
         max_length=50,
         choices=[

@@ -96,6 +96,32 @@ def generate_quotation_pdf(quotation):
     tax_fmt = f"${tax_amount:,.2f}"
     total_fmt = f"${total_amount:,.2f}"
 
+    if quotation.expenses.exists():
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("<b>Insumos y Servicios</b>", styles["Heading4"]))
+        
+        expense_data = [["Concepto", "Categoría", "Cantidad", "Costo Unitario", "Subtotal"]]
+        for exp in quotation.expenses.all():
+            expense_data.append([
+                exp.name,
+                exp.get_category_display(),
+                f"{exp.quantity}",
+                f"${exp.unit_cost:,.2f}",
+                f"${exp.total_cost:,.2f}",
+            ])
+
+        expense_table = Table(expense_data, colWidths=[200, 80, 80, 80, 80])
+        expense_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a73e8")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("ALIGN", (2, 1), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ]))
+        elements.append(expense_table)  
+
+
     summary_data = [
         ["", "", "Subtotal:", subtotal_fmt],
         ["", "", f"IVA ({quotation.tax}%):", tax_fmt],
