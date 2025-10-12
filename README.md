@@ -1,3 +1,13 @@
+# 🚀 SmartQuote – Sistema de Cotizaciones Inteligente para PYMEs
+
+![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)
+![Django](https://img.shields.io/badge/Django-5.0-success?logo=django)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
+![Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+---
 # 🧠 SmartQuote — Sistema Inteligente de Cotizaciones con Precios de Mercado
 
 SmartQuote es una aplicación moderna construida con **Django + Docker + DRF + yFinance**, diseñada para crear y administrar **cotizaciones dinámicas** que se actualizan automáticamente según los **precios reales de metales, madera, PVC y divisas**.
@@ -196,3 +206,7 @@ En el panel de administración de Django:
 ---
 
 > “SmartQuote convierte la información del mercado en decisiones de negocio en tiempo real.” 🚀
+
+---
+
+🪄 *“Cotiza en minutos, sin hojas de cálculo.” – SmartQuote*
