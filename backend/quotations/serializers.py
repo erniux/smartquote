@@ -2,7 +2,7 @@ from rest_framework import serializers
 from decimal import Decimal
 from services.models import MetalPrice, CurrencyRate
 from core.models import Product
-from quotations.models import Quotation, QuotationItem
+from quotations.models import Quotation, QuotationItem, QuotationExpense
 
 
 class QuotationItemSerializer(serializers.ModelSerializer):
@@ -15,14 +15,30 @@ class QuotationItemSerializer(serializers.ModelSerializer):
         read_only_fields = ["unit_price"]
 
 
+class QuotationExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuotationExpense
+        fields = ["id", "name", "description", "category", "quantity", "unit_cost", "total_cost"]
+
+
 class QuotationSerializer(serializers.ModelSerializer):
     items = QuotationItemSerializer(many=True)
+    expenses = QuotationExpenseSerializer(many=True, read_only=True)  # ✅ <--- ahora sí
 
     class Meta:
         model = Quotation
         fields = [
-            "id", "customer_name", "customer_email", "currency",
-            "date", "subtotal", "tax", "total", "notes", "items"
+            "id",
+            "customer_name",
+            "customer_email",
+            "currency",
+            "date",
+            "subtotal",
+            "tax",
+            "total",
+            "notes",
+            "items",
+            "expenses",
         ]
         read_only_fields = ["subtotal", "total"]
 
@@ -45,15 +61,16 @@ class QuotationSerializer(serializers.ModelSerializer):
 
         subtotal = Decimal("0.00")
 
-        # 🧮 Calcular precios dinámicos para cada producto
+        # 🧮 Calcular precios dinámicos de productos
         for item_data in items_data:
             product = item_data["product"]
             quantity = Decimal(item_data.get("quantity", 1))
             unit_price_usd = Decimal(product.price)
 
-            # 🔹 Si tiene símbolo de metal, usar el precio real del mercado
             if product.metal_symbol:
-                metal = MetalPrice.objects.filter(symbol=product.metal_symbol).order_by("-last_updated").first()
+                metal = MetalPrice.objects.filter(
+                    symbol=product.metal_symbol
+                ).order_by("-last_updated").first()
                 if metal:
                     unit_price_usd = Decimal(metal.price_usd)
 
@@ -65,8 +82,18 @@ class QuotationSerializer(serializers.ModelSerializer):
                 quotation=quotation,
                 product=product,
                 quantity=quantity,
-                unit_price=unit_price_local
+                unit_price=unit_price_local,
             )
+
+        # 🧾 Agregar gastos adicionales (QuotationExpense)
+        expenses_total = (
+            QuotationExpense.objects.filter(quotation=quotation)
+            .aggregate(total=serializers.DecimalField(max_digits=10, decimal_places=2))
+            .get("total")
+            or Decimal("0.00")
+        )
+
+        subtotal += expenses_total
 
         # 🧾 Calcular subtotal + IVA + total
         quotation.subtotal = subtotal

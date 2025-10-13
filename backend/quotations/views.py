@@ -4,5 +4,6 @@ from quotations.serializers import QuotationSerializer
 
 
 class QuotationViewSet(viewsets.ModelViewSet):
-    queryset = Quotation.objects.all().order_by("-date")
+    queryset = Quotation.objects.all().prefetch_related("items", "expenses").order_by("-date")
     serializer_class = QuotationSerializer
+
