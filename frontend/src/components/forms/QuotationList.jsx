@@ -2,20 +2,39 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { DocumentTextIcon, UserIcon } from "@heroicons/react/24/outline";
 import QuotationModal from "../modals/QuotationModal";
+import QuotationForm from "./QuotationForm";
 
-export default function QuotationList({ statusFilter = "Todas" }) {
+
+import { motion } from "framer-motion";
+
+export default function QuotationList({ selectedStatus = "all" }) {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
 
+  // 🧩 Efecto para obtener cotizaciones filtradas desde el backend
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/quotations/")
-      .then((response) => setQuotations(response.data))
-      .catch((error) => console.error("Error al obtener cotizaciones:", error))
-      .finally(() => setLoading(false));
-  }, []);
+    const fetchQuotations = async () => {
+      setLoading(true);
+      try {
+        const url =
+          selectedStatus === "all"
+            ? "http://localhost:8000/api/quotations/"
+            : `http://localhost:8000/api/quotations/?status=${selectedStatus}`;
 
+        const response = await axios.get(url);
+        setQuotations(response.data);
+      } catch (error) {
+        console.error("Error al obtener cotizaciones:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuotations();
+  }, [selectedStatus]); // 👈 se actualiza cada vez que cambia el filtro
+
+  // 🧠 Mostrar mensaje de carga
   if (loading) {
     return (
       <p className="text-gray-500 text-center mt-10">
@@ -24,12 +43,6 @@ export default function QuotationList({ statusFilter = "Todas" }) {
     );
   }
 
-  // 🧩 Filtro de cotizaciones por estado
-  const filtered =
-    statusFilter === "Todas"
-      ? quotations
-      : quotations.filter((q) => q.status === statusFilter);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
       <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
@@ -37,17 +50,27 @@ export default function QuotationList({ statusFilter = "Todas" }) {
         Cotizaciones Recientes
       </h1>
 
+      <div className="flex justify-end mb-6">
+        <button
+            onClick={() => setSelectedQuotation({ new: true })}
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition"
+        >
+            ➕ Nueva Cotización
+        </button>
+        </div>
+
       {/* 🧠 Mostrar mensaje si no hay cotizaciones */}
-      {filtered.length === 0 ? (
+      {quotations.length === 0 ? (
         <div className="text-center text-slate-500 py-12">
           <p>No hay cotizaciones con este estado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((q) => (
-            <div
+          {quotations.map((q) => (
+            <motion.div
               key={q.id}
-              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-slate-200 hover:-translate-y-1"
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-slate-200"
             >
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-lg font-semibold text-slate-800">
@@ -88,7 +111,7 @@ export default function QuotationList({ statusFilter = "Todas" }) {
               >
                 Ver Detalle
               </button>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -100,6 +123,15 @@ export default function QuotationList({ statusFilter = "Todas" }) {
           onClose={() => setSelectedQuotation(null)}
         />
       )}
+
+      {selectedQuotation?.new && (
+        <QuotationForm
+            onClose={() => setSelectedQuotation(null)}
+            onSuccess={(newQuotation) => {
+            setQuotations((prev) => [newQuotation, ...prev]); // 👈 inserta al inicio
+            }}
+        />
+)}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Sum
 from decimal import Decimal
 from services.models import MetalPrice, CurrencyRate
 from core.models import Product
@@ -23,7 +24,7 @@ class QuotationExpenseSerializer(serializers.ModelSerializer):
 
 class QuotationSerializer(serializers.ModelSerializer):
     items = QuotationItemSerializer(many=True)
-    expenses = QuotationExpenseSerializer(many=True, read_only=True)  # ✅ <--- ahora sí
+    expenses = QuotationExpenseSerializer(many=True, required=False)  # ✅ <--- ahora sí
 
     class Meta:
         model = Quotation
@@ -88,7 +89,7 @@ class QuotationSerializer(serializers.ModelSerializer):
         # 🧾 Agregar gastos adicionales (QuotationExpense)
         expenses_total = (
             QuotationExpense.objects.filter(quotation=quotation)
-            .aggregate(total=serializers.DecimalField(max_digits=10, decimal_places=2))
+            .aggregate(total=Sum("total_cost"))
             .get("total")
             or Decimal("0.00")
         )
