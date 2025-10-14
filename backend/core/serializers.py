@@ -15,6 +15,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "unit",
             "image",
             "image_url",
+            "metal_symbol",
             "created_at",
             "updated_at",
         ]
