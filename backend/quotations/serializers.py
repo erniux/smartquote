@@ -45,6 +45,7 @@ class QuotationSerializer(serializers.ModelSerializer):
             "expenses",
             "has_sale",
             "sale",
+            "status",
         ]
         read_only_fields = ["subtotal", "total"]
 

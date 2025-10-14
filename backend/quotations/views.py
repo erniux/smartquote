@@ -1,10 +1,11 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db import transaction
 
-from quotations.models import Quotation
 from quotations.serializers import QuotationSerializer
-from sales.models import Sale  # 👈 asegúrate de que la app se llame “sales”
+from sales.models import Sale 
+from quotations.models import Quotation, QuotationItem, QuotationExpense
 from django.db import transaction
 
 class QuotationViewSet(viewsets.ModelViewSet):

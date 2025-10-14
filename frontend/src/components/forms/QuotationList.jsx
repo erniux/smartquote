@@ -9,6 +9,8 @@ export default function QuotationList({ statusFilter = "Todas" }) {
   const [loading, setLoading] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [editingQuotation, setEditingQuotation] = useState(null);
+
 
   useEffect(() => {
     fetchQuotations();
@@ -68,9 +70,11 @@ export default function QuotationList({ statusFilter = "Todas" }) {
   }
 
   const filtered =
-    statusFilter === "Todas"
+    statusFilter === "all"
       ? quotations
       : quotations.filter((q) => q.status === statusFilter);
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -141,9 +145,10 @@ export default function QuotationList({ statusFilter = "Todas" }) {
                 </button>
 
                 {/* 🟢 Editar Cotización (solo Draft) */}
+                {/* 🟢 Editar Cotización (solo Draft) */}
                 {q.status === "draft" && (
                   <button
-                    onClick={() => alert(`Editar cotización ${q.id} (abrir modal luego)`)}
+                    onClick={() => setEditingQuotation(q)}  // 👈 ahora abre el modal
                     className="w-full bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition"
                   >
                     Editar Cotización
@@ -180,6 +185,19 @@ export default function QuotationList({ statusFilter = "Todas" }) {
 
             </motion.div>
           ))}
+
+          {/* 📝 Modal de Edición */}
+          {editingQuotation && (
+            <QuotationForm
+              quotation={editingQuotation}
+              onClose={() => setEditingQuotation(null)}
+              onSuccess={() => {
+                setEditingQuotation(null);
+                fetchQuotations();  // 🔄 refresca la lista al guardar
+              }}
+            />
+          )}
+
         </div>
       )}
 

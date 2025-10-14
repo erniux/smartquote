@@ -5,8 +5,8 @@ import QuotationsPage from "./pages/Quotations/QuotationPage";
 
 function App() {
   const mockUser = {
-    name: "Patricia Pérez",
-    email: "patricia@esmeralda.mx",
+    name: "Erna Tercero",
+    email: "erniux@esmeralda.mx",
   };
 
   return (
