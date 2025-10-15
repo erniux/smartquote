@@ -2,9 +2,15 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { DocumentTextIcon, UserIcon } from "@heroicons/react/24/outline";
 import QuotationModal from "../modals/QuotationModal";
+import QuotationForm from "./QuotationForm.jsx";
 import { motion } from "framer-motion";
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+} from "@heroicons/react/24/solid";
 
-export default function QuotationList({ statusFilter = "Todas" }) {
+export default function QuotationList({ statusFilter }) {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
@@ -15,6 +21,22 @@ export default function QuotationList({ statusFilter = "Todas" }) {
   useEffect(() => {
     fetchQuotations();
   }, []);
+
+  const statusConfig = {
+    confirmed: {
+      icon: <CheckCircleIcon className="w-4 h-4 text-emerald-700" />,
+      classes: "bg-emerald-50 text-emerald-700",
+    },
+    cancelled: {
+      icon: <XCircleIcon className="w-4 h-4 text-rose-700" />,
+      classes: "bg-rose-50 text-rose-700",
+    },
+    draft: {
+      icon: <ClockIcon className="w-4 h-4 text-yellow-700" />,
+      classes: "bg-yellow-50 text-yellow-700",
+    },
+  };
+
 
   const fetchQuotations = async () => {
     try {
@@ -74,6 +96,7 @@ export default function QuotationList({ statusFilter = "Todas" }) {
       ? quotations
       : quotations.filter((q) => q.status === statusFilter);
 
+   
   
 
   return (
@@ -108,10 +131,21 @@ export default function QuotationList({ statusFilter = "Todas" }) {
                   <h2 className="text-lg font-semibold text-slate-800">
                     {q.customer_name}
                   </h2>
+                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-medium">
                     {q.currency}
                   </span>
+                  <span
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium  ${
+                      statusConfig[q.status]?.classes || "bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    {statusConfig[q.status]?.icon}
+                    {q.status.toUpperCase()}
+                  </span>
                 </div>
+
+              </div>
 
                 <div className="flex items-center gap-2 text-gray-500 mb-2">
                   <UserIcon className="h-5 w-5 text-gray-400" />
@@ -145,10 +179,9 @@ export default function QuotationList({ statusFilter = "Todas" }) {
                 </button>
 
                 {/* 🟢 Editar Cotización (solo Draft) */}
-                {/* 🟢 Editar Cotización (solo Draft) */}
-                {q.status === "draft" && (
+                {q.status === "draft" &&  (
                   <button
-                    onClick={() => setEditingQuotation(q)}  // 👈 ahora abre el modal
+                    onClick={() => setEditingQuotation(q)}
                     className="w-full bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition"
                   >
                     Editar Cotización
@@ -156,7 +189,7 @@ export default function QuotationList({ statusFilter = "Todas" }) {
                 )}
 
                 {/* 🟡 Generar Venta (solo si NO está cancelada ni confirmada) */}
-                {!["cancelled", "confirmed"].includes(q.status) && !q.sale && (
+                {!["confirmed"].includes(q.status) && !q.sale && (
                   <button
                     onClick={() => handleGenerateSale(q.id)}
                     className="w-full bg-amber-500 text-white py-2 rounded-lg font-medium hover:bg-amber-600 transition"

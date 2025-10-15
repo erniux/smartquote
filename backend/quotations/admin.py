@@ -21,8 +21,8 @@ class QuotationExpenseInline(admin.TabularInline):
 
 @admin.register(Quotation)
 class QuotationAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer_name", "currency", "subtotal", "total", "date", "updated_at")
-    list_filter = ("currency", "date")
+    list_display = ("id", "customer_name", "currency", "subtotal", "total", "date", "status", "updated_at")
+    list_filter = ("currency", "date", "status")
     inlines = [QuotationItemInline, QuotationExpenseInline]
     actions = ["recalculate_prices_action", "confirm_quotation_action"]
 

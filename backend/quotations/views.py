@@ -66,7 +66,7 @@ class QuotationViewSet(viewsets.ModelViewSet):
                 subtotal=original.subtotal,
                 tax=original.tax,
                 total=original.total,
-                status="draft",  # 👈 siempre borrador
+                status="draft",  
             )
 
             # Duplicar items
