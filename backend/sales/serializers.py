@@ -19,7 +19,19 @@ class SaleSerializer(serializers.ModelSerializer):
     quotation_email = serializers.EmailField(source="quotation.customer_email", read_only=True)
     quotation_company = serializers.CharField(source="quotation.company", read_only=True)
     invoice_id = serializers.SerializerMethodField()
+    invoice_pdf_url = serializers.SerializerMethodField()
 
+    def get_invoice_pdf_url(self, obj):
+        """Devuelve la URL del PDF de la factura si existe."""
+        if hasattr(obj, "invoice") and getattr(obj.invoice, "pdf_file", None):
+            return obj.invoice.pdf_file.url
+        return None
+
+    def get_invoice_id(self, obj):
+        """Devuelve el ID de la factura si existe."""
+        if hasattr(obj, "invoice"):
+            return obj.invoice.id
+        return None
 
     payments = PaymentSerializer(many=True, read_only=True)
 
