@@ -62,41 +62,46 @@ class QuotationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items_data = validated_data.pop("items", [])
         expenses_data = validated_data.pop("expenses", [])
+
         quotation = Quotation.objects.create(**validated_data)
 
+        # 🔹 Crear items correctamente asociados al producto
         for item_data in items_data:
-            item_id = item_data.get("id")  # ID del QuotationItem (si existe)
-            product_id = item_data.get("product_id") or item_data.get("product") or item_data.get("product_id") or item_data.get("id")
+            # El frontend envía un objeto con info del producto (name, metal_symbol, price)
+            product_id = item_data.get("id")
 
-            # 👇 Si el backend recibe el id del producto como "id", intentamos distinguirlo:
-            if item_id and not Product.objects.filter(id=item_id).exists():
-                # Si el id no pertenece a un producto, entonces es del item.
-                product_instance = None
-            else:
+            # Si 'id' no es un número, intentar obtener por nombre
+            product_instance = None
+            if isinstance(product_id, int):
                 product_instance = Product.objects.filter(id=product_id).first()
+            elif isinstance(item_data.get("name"), str):
+                product_instance = Product.objects.filter(name=item_data["name"]).first()
 
+            # Si no existe, NO crear producto nuevo, solo saltar
             if not product_instance:
                 continue
 
             QuotationItem.objects.create(
                 quotation=quotation,
                 product=product_instance,
-                quantity=item_data.get("quantity", 1),
-                unit_price=item_data.get("unit_price", item_data.get("price", 0)),
+                quantity=Decimal(item_data.get("quantity", 1)),
+                unit_price=Decimal(item_data.get("unit_price", item_data.get("price", 0))),
             )
 
-        for exp_data in expenses_data:
+        # 🔹 Crear expenses asociados
+        for expense_data in expenses_data:
             QuotationExpense.objects.create(
                 quotation=quotation,
-                name=exp_data.get("name", ""),
-                description=exp_data.get("description", ""),
-                category=exp_data.get("category", "other"),
-                quantity=Decimal(exp_data.get("quantity", 1)),
-                unit_cost=Decimal(exp_data.get("unit_cost", 0)),
-                total_cost=Decimal(exp_data.get("total_cost", 0)),
+                name=expense_data.get("name"),
+                description=expense_data.get("description", ""),
+                category=expense_data.get("category", "other"),
+                quantity=Decimal(expense_data.get("quantity", 1)),
+                unit_cost=Decimal(expense_data.get("unit_cost", 0)),
+                total_cost=Decimal(expense_data.get("total_cost", 0)),
             )
 
         return quotation
+
 
     # ============================================================
     # UPDATE (agregar, modificar y borrar items/expenses)

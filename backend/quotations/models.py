@@ -5,6 +5,7 @@ from core.models import Product
 from services.models import MetalPrice, CurrencyRate
 from companies.models import Company
 
+
 MONEY_FIELD = dict(max_digits=14, decimal_places=2, default=0)
 
 class Quotation(models.Model):
@@ -34,13 +35,10 @@ class Quotation(models.Model):
         ("cancelled", "Cancelada"),
     ],
     default="draft"
-)
-
-
-    def __str__(self):
-        return f"Cotización #{self.id} - {self.customer_name}"
-
-    from decimal import Decimal, ROUND_HALF_UP
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.TextField(null=True, blank=True)
 
     def calculate_totals(self):
         """
@@ -94,6 +92,17 @@ class Quotation(models.Model):
             return sale
         return self.sale
 
+    def save(self, *args, **kwargs):
+        if self.status == "confirmed" and not self.confirmed_at:
+            self.confirmed_at = timezone.now()
+        elif self.status == "cancelled" and not self.cancelled_at:
+            self.cancelled_at = timezone.now()
+       
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return f"Cotización #{self.id} - {self.customer_name}"
 
 
 class QuotationItem(models.Model):

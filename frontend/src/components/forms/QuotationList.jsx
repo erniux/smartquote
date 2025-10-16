@@ -19,6 +19,11 @@ export default function QuotationList({ statusFilter }) {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [creating, setCreating] = useState(false);
+  // --- Estados para el modal de cancelación ---
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [quotationToCancel, setQuotationToCancel] = useState(null);
 
 
 
@@ -88,6 +93,37 @@ export default function QuotationList({ statusFilter }) {
     }
   };
 
+  const handleCancelQuotation = (quotationId) => {
+    setQuotationToCancel(quotationId);
+    setCancelReason("");
+    setShowCancelModal(true);
+};
+
+  const confirmCancelQuotation = async () => {
+    if (!cancelReason.trim()) {
+      alert("Por favor escribe la razón de cancelación.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `http://localhost:8000/api/quotations/${quotationToCancel}/cancel/`,
+        { reason: cancelReason }
+      );
+
+      alert("❌ Cotización cancelada correctamente.");
+      console.log("Cancelación:", res.data);
+
+      setShowCancelModal(false);
+      setQuotationToCancel(null);
+      setCancelReason("");
+      fetchQuotations(); // 🔄 refrescar lista
+    } catch (error) {
+      console.error("Error al cancelar cotización:", error);
+      alert(error.response?.data?.error || "No se pudo cancelar la cotización.");
+    }
+  };
+
 
   const handleGenerateSale = async (id) => {
     try {
@@ -95,6 +131,8 @@ export default function QuotationList({ statusFilter }) {
         `http://localhost:8000/api/quotations/${id}/generate-sale/`
       );
       setSuccessMessage(`✅ Venta generada (ID ${response.data.sale_id})`);
+      console.log("✅ Venta generada:", response.data);
+      alert("Venta generada correctamente ✅");
 
       // 🔄 refrescar la lista para reflejar el cambio
       fetchQuotations();
@@ -126,11 +164,14 @@ export default function QuotationList({ statusFilter }) {
   return (
     
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-        <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
-        Cotizaciones Recientes
-      </h1>
-
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => setCreating(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition"
+        >
+          + Nueva Cotización
+        </button>
+      </div>
       <div className="bg-emerald-900/60 p-4 rounded-lg mb-6 flex flex-wrap gap-3 items-center justify-between">
         {/* 🔍 Buscar por cliente o correo */}
         <input
@@ -159,7 +200,6 @@ export default function QuotationList({ statusFilter }) {
           />
         </div>
       </div>
-
 
       {successMessage && (
         <div className="bg-emerald-100 border border-emerald-400 text-emerald-800 px-4 py-2 rounded mb-4 text-center">
@@ -195,6 +235,19 @@ export default function QuotationList({ statusFilter }) {
                   </span>
                 </div>
 
+              </div>
+              <div className="mb-4">
+              {q.status === "cancelled" && q.cancellation_reason && (
+                <p className="text-xs text-rose-300 mt-1 italic">
+                  Motivo: {q.cancellation_reason}
+                </p>
+              )}
+
+              {q.status === "cancelled" && q.cancelled_at && (
+                <p className="text-xs text-rose-400">
+                  Cancelada el {new Date(q.cancelled_at).toLocaleDateString()}
+                </p>
+              )}
               </div>
 
                 <div className="flex items-center gap-2 text-gray-500 mb-2">
@@ -242,12 +295,21 @@ export default function QuotationList({ statusFilter }) {
                 )}
 
                 {/* 🟡 Generar Venta (solo si NO está cancelada ni confirmada) */}
-                {!["confirmed"].includes(q.status) && !q.sale && (
+                {!["confirmed"].includes(q.status) && q.status !== "cancelled" && !q.sale && (
                   <button
                     onClick={() => handleGenerateSale(q.id)}
                     className="w-full bg-amber-500 text-white py-2 rounded-lg font-medium hover:bg-amber-600 transition"
                   >
                     Generar Venta
+                  </button>
+                )}
+
+                {q.status !== "cancelled" && q.status !== "confirmed" && (
+                  <button
+                    onClick={() => handleCancelQuotation(q.id)}
+                    className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md transition"
+                  >
+                    Cancelar
                   </button>
                 )}
 
@@ -284,6 +346,53 @@ export default function QuotationList({ statusFilter }) {
             />
           )}
 
+          {/* ➕ Modal de Creación */}
+          {creating && (
+            <QuotationForm
+              quotation={null}
+              onClose={() => setCreating(false)}
+              onSuccess={() => {
+                setCreating(false);
+                fetchQuotations();
+              }}
+            />
+          )}
+
+          {showCancelModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <div className="bg-emerald-900 text-white p-6 rounded-2xl w-96 shadow-lg border border-emerald-700">
+                <h2 className="text-lg font-semibold text-rose-300 mb-4">
+                  Cancelar cotización
+                </h2>
+
+                <label className="block text-sm mb-1 text-emerald-100">
+                  Motivo de cancelación:
+                </label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  rows="4"
+                  className="w-full p-2 rounded-md bg-emerald-800 border border-emerald-600 focus:ring-2 focus:ring-rose-400 focus:outline-none text-white text-sm"
+                  placeholder="Escribe aquí el motivo..."
+                />
+
+                <div className="flex justify-end mt-4 gap-3">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2 rounded-md text-sm transition"
+                  >
+                    Volver
+                  </button>
+                  <button
+                    onClick={confirmCancelQuotation}
+                    className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md text-sm transition"
+                  >
+                    Confirmar cancelación
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

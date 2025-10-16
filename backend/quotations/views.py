@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend 
 from django.db import transaction
+from django.utils import timezone
+
 
 from quotations.serializers import QuotationSerializer
 from sales.models import Sale 
@@ -14,9 +16,7 @@ class QuotationViewSet(viewsets.ModelViewSet):
     serializer_class = QuotationSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['customer_name', 'customer_email']
-    filterset_fields = {
-        'date': ['gte', 'lte'],  # rango de fechas
-    }
+    filterset_fields = {'date': ['gte', 'lte'], 'status': ['exact']}
 
     @action(detail=True, methods=["post"], url_path="generate-sale")
     def generate_sale(self, request, pk=None):
@@ -37,6 +37,7 @@ class QuotationViewSet(viewsets.ModelViewSet):
             quotation=quotation,
             total_amount=quotation.total,
             notes=f"Venta generada automáticamente desde cotización #{quotation.id}",
+            status="pending",
         )
 
         # Establecer fechas de entrega y garantía
@@ -52,8 +53,22 @@ class QuotationViewSet(viewsets.ModelViewSet):
             "warranty_end": sale.warranty_end,
         }
 
-        return Response(serializer_data, status=status.HTTP_201_CREATED)
+        quotation.status = "confirmed"
+        quotation.confirmed_at = timezone.now()
+        quotation.save(update_fields=["status", "confirmed_at"])
 
+        quotation.refresh_from_db()
+
+        serializer = self.get_serializer(quotation)
+
+        return Response(
+        {
+            "message": "Venta generada correctamente.",
+            "quotation": serializer.data,
+            "sale_id": sale.id,
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
     @action(detail=True, methods=["post"], url_path="duplicate")
     def duplicate(self, request, pk=None):
@@ -100,3 +115,28 @@ class QuotationViewSet(viewsets.ModelViewSet):
             {"detail": f"Cotización duplicada (ID {new_quotation.id})", "new_id": new_quotation.id},
             status=status.HTTP_201_CREATED,
         )
+
+
+    @action(detail=True, methods=["post"], url_path="cancel")
+    def cancel_quotation(self, request, pk=None):
+        quotation = self.get_object()
+
+        if quotation.status == "cancelled":
+            return Response({"detail": "Esta cotización ya está cancelada."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        reason = request.data.get("reason", "").strip()
+        if not reason:
+            return Response({"error": "Debe proporcionar una razón de cancelación."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        quotation.status = "cancelled"
+        quotation.cancellation_reason = reason
+        quotation.cancelled_at = timezone.now()
+        quotation.save(update_fields=["status", "cancellation_reason", "cancelled_at"])
+
+        serializer = self.get_serializer(quotation)
+        return Response({
+            "message": "Cotización cancelada correctamente.",
+            "quotation": serializer.data
+        }, status=status.HTTP_200_OK)

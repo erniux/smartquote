@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import QuotationList from "../../components/forms/QuotationList.jsx";
+import { DocumentTextIcon, UserIcon } from "@heroicons/react/24/outline";
 
 const QuotationPage = () => {
   // 👇 Un solo estado para el filtro
@@ -8,7 +9,10 @@ const QuotationPage = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* Título */}
-      <h1 className="text-2xl font-bold text-slate-700">Cotizaciones</h1>
+      <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+        <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
+        Cotizaciones Recientes
+      </h1>
 
       {/* 🔍 Filtro de estado */}
       <div className="bg-white shadow p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
