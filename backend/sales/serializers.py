@@ -18,6 +18,8 @@ class SaleSerializer(serializers.ModelSerializer):
     quotation_name = serializers.CharField(source="quotation.customer_name", read_only=True)
     quotation_email = serializers.EmailField(source="quotation.customer_email", read_only=True)
     quotation_company = serializers.CharField(source="quotation.company", read_only=True)
+    invoice_id = serializers.SerializerMethodField()
+
 
     payments = PaymentSerializer(many=True, read_only=True)
 
@@ -36,6 +38,7 @@ class SaleSerializer(serializers.ModelSerializer):
             "warranty_end",
             "notes",
             "payments",
+            "invoice_id"
         ]
 
     def update(self, instance, validated_data):
@@ -80,4 +83,8 @@ class SaleSerializer(serializers.ModelSerializer):
             )
 
             send_invoice_email(invoice)
+
         return sale
+    
+    def get_invoice_id(self, obj):
+        return getattr(obj.invoice, "id", None) if hasattr(obj, "invoice") else None

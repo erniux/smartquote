@@ -11,23 +11,41 @@ const SalesPage = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* 🧾 Título */}
-      <h1 className="text-3xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
-        Ventas
-      </h1>
+      <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+              <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
+              Ventas
+            </h1>
 
       {/* 🔍 Filtros de búsqueda */}
       <div className="bg-[#5d8f88]/90 p-4 rounded-md shadow-sm flex flex-wrap items-center gap-3 justify-between sm:justify-start">
-        {/* 🔎 Buscador */}
-        <div className="flex-1 min-w-[220px]">
+        {/* 🔎 Buscador con ícono */}
+        <div className="relative flex-1 min-w-[220px]">
+          <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.8}
+              stroke="white"
+              className="w-5 h-5 opacity-80"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M17.65 9.5A8.15 8.15 0 119.5 1.35 8.15 8.15 0 0117.65 9.5z"
+              />
+            </svg>
+          </span>
+
           <input
             type="text"
-            placeholder="Buscar cliente, correo o número..."
+            placeholder="Buscar cliente o correo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-md px-4 py-2 text-white placeholder-white/90 bg-[#003b32] focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            className="w-full rounded-md pl-10 pr-4 py-2 text-white placeholder-white/90 bg-[#003b32] focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
         </div>
+
 
         {/* 📅 Fechas */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">

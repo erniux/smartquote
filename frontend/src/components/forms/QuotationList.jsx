@@ -1,83 +1,58 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { DocumentTextIcon, UserIcon } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
+import { UserIcon } from "@heroicons/react/24/outline";
 import QuotationModal from "../modals/QuotationModal";
 import QuotationForm from "./QuotationForm.jsx";
-import { motion } from "framer-motion";
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-} from "@heroicons/react/24/solid";
 
-export default function QuotationList({ statusFilter }) {
+export default function QuotationList({ statusFilter, searchTerm, startDate, endDate }) {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [editingQuotation, setEditingQuotation] = useState(null);
-  const [search, setSearch] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [creating, setCreating] = useState(false);
-  // --- Estados para el modal de cancelación ---
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [quotationToCancel, setQuotationToCancel] = useState(null);
 
-
+  const API_URL = "http://localhost:8000/api/quotations/";
 
   useEffect(() => {
-    const fetchQuotations = async () => {
-      try {
-        const params = new URLSearchParams();
-
-        if (search) params.append("search", search);
-        if (startDate) params.append("date__gte", startDate);
-        if (endDate) params.append("date__lte", endDate);
-
-        const response = await axios.get(
-          `http://localhost:8000/api/quotations/?${params.toString()}`
-        );
-        setQuotations(response.data);
-      } catch (error) {
-        console.error("Error al obtener cotizaciones:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-  fetchQuotations();
-}, [search, startDate, endDate]);
-
-
-  const statusConfig = {
-    confirmed: {
-      icon: <CheckCircleIcon className="w-4 h-4 text-emerald-700" />,
-      classes: "bg-emerald-50 text-emerald-700",
-    },
-    cancelled: {
-      icon: <XCircleIcon className="w-4 h-4 text-rose-700" />,
-      classes: "bg-rose-50 text-rose-700",
-    },
-    draft: {
-      icon: <ClockIcon className="w-4 h-4 text-yellow-700" />,
-      classes: "bg-yellow-50 text-yellow-700",
-    },
-  };
-
+    fetchQuotations();
+  }, []);
 
   const fetchQuotations = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/quotations/");
+      const response = await axios.get(API_URL);
       setQuotations(response.data);
     } catch (error) {
       console.error("Error al obtener cotizaciones:", error);
+      toast.error("❌ Error al cargar cotizaciones");
     } finally {
       setLoading(false);
     }
   };
+
+  // 🧠 Filtro local (igual que en Ventas)
+  const filtered = quotations.filter((q) => {
+    const matchStatus =
+      statusFilter === "all" ? true : q.status === statusFilter;
+
+    const search = searchTerm.toLowerCase();
+    const matchSearch =
+      q.customer_name?.toLowerCase().includes(search) ||
+      q.customer_email?.toLowerCase().includes(search) ||
+      q.id.toString().includes(search);
+
+    const date = new Date(q.date);
+    const matchStart = startDate ? date >= new Date(startDate) : true;
+    const matchEnd = endDate ? date <= new Date(endDate) : true;
+
+    return matchStatus && matchSearch && matchStart && matchEnd;
+  });
+
 
   const handleDuplicate = async (id) => {
     try {
@@ -155,13 +130,6 @@ export default function QuotationList({ statusFilter }) {
       </p>
     );
   }
-
-  const filtered =
-    statusFilter === "all"
-      ? quotations
-      : quotations.filter((q) => q.status === statusFilter);
-
-   
   
 
   return (
@@ -174,34 +142,6 @@ export default function QuotationList({ statusFilter }) {
         >
           + Nueva Cotización
         </button>
-      </div>
-      <div className="bg-emerald-900/60 p-4 rounded-lg mb-6 flex flex-wrap gap-3 items-center justify-between">
-        {/* 🔍 Buscar por cliente o correo */}
-        <input
-          type="text"
-          placeholder="Buscar cliente o correo..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-emerald-950 border border-emerald-700 rounded-md px-3 py-2 text-slate-100 w-full md:w-1/3"
-        />
-
-        {/* 📅 Rango de fechas */}
-        <div className="flex gap-2 items-center">
-          <label className="text-slate-300 text-sm">Desde:</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-emerald-950 border border-emerald-700 rounded-md px-2 py-1 text-slate-100"
-          />
-          <label className="text-slate-300 text-sm">Hasta:</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-emerald-950 border border-emerald-700 rounded-md px-2 py-1 text-slate-100"
-          />
-        </div>
       </div>
 
       {successMessage && (
@@ -240,17 +180,17 @@ export default function QuotationList({ statusFilter }) {
 
               </div>
               <div className="mb-4">
-              {q.status === "cancelled" && q.cancellation_reason && (
-                <p className="text-xs text-rose-300 mt-1 italic">
-                  Motivo: {q.cancellation_reason}
-                </p>
-              )}
+                {q.status === "cancelled" && q.cancellation_reason && (
+                  <p className="text-xs text-rose-300 mt-1 italic">
+                    Motivo: {q.cancellation_reason}
+                  </p>
+                )}
 
-              {q.status === "cancelled" && q.cancelled_at && (
-                <p className="text-xs text-rose-400">
-                  Cancelada el {new Date(q.cancelled_at).toLocaleDateString()}
-                </p>
-              )}
+                {q.status === "cancelled" && q.cancelled_at && (
+                  <p className="text-xs text-rose-400">
+                    Cancelada el {new Date(q.cancelled_at).toLocaleDateString()}
+                  </p>
+                )}
               </div>
 
                 <div className="flex items-center gap-2 text-gray-500 mb-2">
