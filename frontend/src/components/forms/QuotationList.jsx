@@ -16,11 +16,35 @@ export default function QuotationList({ statusFilter }) {
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [editingQuotation, setEditingQuotation] = useState(null);
+  const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
 
 
   useEffect(() => {
-    fetchQuotations();
-  }, []);
+    const fetchQuotations = async () => {
+      try {
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        if (startDate) params.append("date__gte", startDate);
+        if (endDate) params.append("date__lte", endDate);
+
+        const response = await axios.get(
+          `http://localhost:8000/api/quotations/?${params.toString()}`
+        );
+        setQuotations(response.data);
+      } catch (error) {
+        console.error("Error al obtener cotizaciones:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  fetchQuotations();
+}, [search, startDate, endDate]);
+
 
   const statusConfig = {
     confirmed: {
@@ -100,11 +124,42 @@ export default function QuotationList({ statusFilter }) {
   
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
       <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
         <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
         Cotizaciones Recientes
       </h1>
+
+      <div className="bg-emerald-900/60 p-4 rounded-lg mb-6 flex flex-wrap gap-3 items-center justify-between">
+        {/* 🔍 Buscar por cliente o correo */}
+        <input
+          type="text"
+          placeholder="Buscar cliente o correo..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-emerald-950 border border-emerald-700 rounded-md px-3 py-2 text-slate-100 w-full md:w-1/3"
+        />
+
+        {/* 📅 Rango de fechas */}
+        <div className="flex gap-2 items-center">
+          <label className="text-slate-300 text-sm">Desde:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="bg-emerald-950 border border-emerald-700 rounded-md px-2 py-1 text-slate-100"
+          />
+          <label className="text-slate-300 text-sm">Hasta:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="bg-emerald-950 border border-emerald-700 rounded-md px-2 py-1 text-slate-100"
+          />
+        </div>
+      </div>
+
 
       {successMessage && (
         <div className="bg-emerald-100 border border-emerald-400 text-emerald-800 px-4 py-2 rounded mb-4 text-center">

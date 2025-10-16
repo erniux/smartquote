@@ -1,16 +1,22 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend 
 from django.db import transaction
 
 from quotations.serializers import QuotationSerializer
 from sales.models import Sale 
 from quotations.models import Quotation, QuotationItem, QuotationExpense
-from django.db import transaction
+
 
 class QuotationViewSet(viewsets.ModelViewSet):
     queryset = Quotation.objects.all().prefetch_related("items", "expenses").order_by("-date")
     serializer_class = QuotationSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['customer_name', 'customer_email']
+    filterset_fields = {
+        'date': ['gte', 'lte'],  # rango de fechas
+    }
 
     @action(detail=True, methods=["post"], url_path="generate-sale")
     def generate_sale(self, request, pk=None):
