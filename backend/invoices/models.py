@@ -3,7 +3,10 @@ from sales.models import Sale
 from django.utils import timezone
 
 class Invoice(models.Model):
-    sale = models.OneToOneField(Sale, on_delete=models.CASCADE, related_name="invoice")
+    sale = models.OneToOneField("sales.Sale",
+        on_delete=models.CASCADE,
+        related_name="invoice", 
+        verbose_name="Venta asociada",)
     invoice_number = models.CharField(max_length=20, unique=True)
     issue_date = models.DateField(default=timezone.now)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2)

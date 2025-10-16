@@ -50,7 +50,8 @@ class SaleSerializer(serializers.ModelSerializer):
             "warranty_end",
             "notes",
             "payments",
-            "invoice_id"
+            "invoice_id",
+            "invoice_pdf_url"
         ]
 
     def update(self, instance, validated_data):
@@ -100,3 +101,12 @@ class SaleSerializer(serializers.ModelSerializer):
     
     def get_invoice_id(self, obj):
         return getattr(obj.invoice, "id", None) if hasattr(obj, "invoice") else None
+
+    def get_invoice_pdf_url(self, obj):
+        """Devuelve la URL del PDF de la factura si existe."""
+        try:
+            if hasattr(obj, "invoice") and getattr(obj.invoice, "pdf_file", None):
+                return obj.invoice.pdf_file.url
+        except Exception:
+            return None
+        return None

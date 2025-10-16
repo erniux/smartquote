@@ -3,6 +3,8 @@ import React from "react";
 export default function InvoiceModal({ invoiceUrl, onClose }) {
   if (!invoiceUrl) return null;
 
+  console.log("URL del PDF recibido:", invoiceUrl);
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-[90vw] md:w-[70vw] h-[90vh] flex flex-col overflow-hidden">
@@ -22,14 +24,19 @@ export default function InvoiceModal({ invoiceUrl, onClose }) {
         {/* PDF Viewer */}
         <div className="flex-1 bg-gray-100">
           <iframe
-            src={invoiceUrl}
+            src={
+                invoiceUrl.startsWith("http")
+                ? invoiceUrl
+                : `http://localhost:8000${invoiceUrl}`
+            }
             title="Factura PDF"
             width="100%"
             height="100%"
             className="border-none"
-          ></iframe>
+            ></iframe>
         </div>
       </div>
     </div>
+
   );
 }

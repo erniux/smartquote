@@ -129,6 +129,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+X_FRAME_OPTIONS = 'ALLOWALL'
+
+
 # Ejemplo: si quieres tener una carpeta `uploads/` dentro de media
 UPLOAD_DIR = MEDIA_ROOT / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
