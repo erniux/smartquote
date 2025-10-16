@@ -18,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/quotations" />} />
         <Route path="/quotations" element={<QuotationsPage />} />
+        <Route path="/sales" element={<SalesList />} />
         <Route path="*" element={<p>Página no encontrada</p>} />
       </Routes>
     </Layout>
@@ -25,3 +26,4 @@ function App() {
 }
 
 export default App;
+

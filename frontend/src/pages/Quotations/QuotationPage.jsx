@@ -11,7 +11,7 @@ const QuotationPage = () => {
       {/* Título */}
       <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
         <DocumentTextIcon className="h-8 w-8 text-emerald-600" />
-        Cotizaciones Recientes
+        Cotizaciones
       </h1>
 
       {/* 🔍 Filtro de estado */}
