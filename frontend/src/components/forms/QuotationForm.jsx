@@ -260,6 +260,7 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
             <h3 className="font-semibold mb-2 text-lg">Gastos adicionales</h3>
             {formData.expenses.map((exp, index) => (
               <div key={index} className="flex items-center gap-2 mb-2">
+                {/* Nombre del gasto */}
                 <input
                   type="text"
                   placeholder="Nombre del gasto"
@@ -271,6 +272,24 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
                   }}
                   className="bg-emerald-800 border border-emerald-600 rounded-md px-3 py-1 w-1/3"
                 />
+
+                {/* Categoría */}
+                <select
+                  value={exp.category || "other"}
+                  onChange={(e) => {
+                    const newExps = [...formData.expenses];
+                    newExps[index].category = e.target.value;
+                    setFormData({ ...formData, expenses: newExps });
+                  }}
+                  className="bg-emerald-800 border border-emerald-600 rounded-md px-2 py-1 w-1/4 text-slate-100"
+                >
+                  <option value="material">Material</option>
+                  <option value="labor">Mano de obra</option>
+                  <option value="transport">Transporte</option>
+                  <option value="other">Otro</option>
+                </select>
+
+                {/* Cantidad */}
                 <input
                   type="number"
                   placeholder="Cantidad"
@@ -280,8 +299,10 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
                     newExps[index].quantity = e.target.value;
                     setFormData({ ...formData, expenses: newExps });
                   }}
-                  className="bg-emerald-800 border border-emerald-600 rounded-md px-3 py-1 w-1/4"
+                  className="bg-emerald-800 border border-emerald-600 rounded-md px-3 py-1 w-1/5"
                 />
+
+                {/* Costo unitario */}
                 <input
                   type="number"
                   placeholder="Costo unitario"
@@ -291,11 +312,20 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
                     newExps[index].unit_cost = e.target.value;
                     setFormData({ ...formData, expenses: newExps });
                   }}
-                  className="bg-emerald-800 border border-emerald-600 rounded-md px-3 py-1 w-1/4"
+                  className="bg-emerald-800 border border-emerald-600 rounded-md px-3 py-1 w-1/5"
                 />
-                <button type="button" onClick={() => removeExpense(index)} className="text-rose-400 hover:text-rose-500">✖</button>
+
+                {/* Botón eliminar */}
+                <button
+                  type="button"
+                  onClick={() => removeExpense(index)}
+                  className="text-rose-400 hover:text-rose-500"
+                >
+                  ✖
+                </button>
               </div>
             ))}
+
             <button type="button" onClick={addExpense} className="bg-emerald-700 hover:bg-emerald-600 px-3 py-1 rounded-md mt-2">
               + Agregar gasto
             </button>

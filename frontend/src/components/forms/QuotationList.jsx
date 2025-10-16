@@ -131,16 +131,11 @@ export default function QuotationList({ statusFilter }) {
                   <h2 className="text-lg font-semibold text-slate-800">
                     {q.customer_name}
                   </h2>
-                 <div className="flex items-center gap-2">
-                  <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-medium">
+                 <div className="flex flex-wrap justify-end gap-2 mt-1">
+                  <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-medium whitespace-nowrap">
                     {q.currency}
                   </span>
-                  <span
-                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium  ${
-                      statusConfig[q.status]?.classes || "bg-gray-50 text-gray-700"
-                    }`}
-                  >
-                    {statusConfig[q.status]?.icon}
+                  <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-md font-medium whitespace-nowrap">
                     {q.status.toUpperCase()}
                   </span>
                 </div>
