@@ -142,3 +142,23 @@ button:focus-visible {
     margin: 0;
     padding: 0;
 }
+
+.Toastify__toast--success {
+  background-color: #065f46; /* verde esmeralda oscuro */
+  color: #ecfdf5;
+}
+
+.Toastify__toast--error {
+  background-color: #7f1d1d; /* rojo rosado */
+  color: #fee2e2;
+}
+
+.Toastify__toast--info {
+  background-color: #374151; /* gris elegante */
+  color: #e0f2fe;
+}
+
+.Toastify__toast--warning {
+  background-color: #78350f; /* naranja quemado */
+  color: #ffedd5;
+}

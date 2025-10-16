@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ProductSelector from "./ProductSelector.jsx";
+import { toast } from "react-toastify";
 
 export default function QuotationForm({ quotation = null, onClose, onSuccess }) {
   const isEditing = !!quotation;
@@ -36,7 +37,9 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
       });
     })
     .catch((err) => {
-      setMessage("❌ No se pudo cargar la cotización");
+      //setMessage("❌ No se pudo cargar la cotización");
+      toast.error("❌ No se pudo cargar la cotización");
+
     });
     }, [quotation]);
 
@@ -137,13 +140,15 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
       };
 
       const response = await axios[method](url, payload);
-      setMessage(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
+      //setMessage(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
+      toast.success(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
       setTimeout(() => {
         onSuccess(response.data);
         onClose();
       }, 800);
     } catch (err) { 
-      setMessage("❌ Error al guardar cotización");
+      //setMessage("❌ Error al guardar cotización");
+      toast.error("❌ Error al guardar cotización");
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { DocumentTextIcon, UserIcon } from "@heroicons/react/24/outline";
 import QuotationModal from "../modals/QuotationModal";
 import QuotationForm from "./QuotationForm.jsx";
@@ -101,7 +102,9 @@ export default function QuotationList({ statusFilter }) {
 
   const confirmCancelQuotation = async () => {
     if (!cancelReason.trim()) {
-      alert("Por favor escribe la razón de cancelación.");
+    //  alert("Por favor escribe la razón de cancelación.");
+      toast.success("✅ Por favor escribe la razón de cancelación.");
+
       return;
     }
 
@@ -111,7 +114,9 @@ export default function QuotationList({ statusFilter }) {
         { reason: cancelReason }
       );
 
-      alert("❌ Cotización cancelada correctamente.");
+      // alert("❌ Cotización cancelada correctamente.");
+      toast.success("✅ Cotización cancelada correctamente.");
+
       console.log("Cancelación:", res.data);
 
       setShowCancelModal(false);
@@ -120,7 +125,8 @@ export default function QuotationList({ statusFilter }) {
       fetchQuotations(); // 🔄 refrescar lista
     } catch (error) {
       console.error("Error al cancelar cotización:", error);
-      alert(error.response?.data?.error || "No se pudo cancelar la cotización.");
+      // alert(error.response?.data?.error || "No se pudo cancelar la cotización.");
+      toast.error(error.response?.data?.error || "❌ No se pudo cancelar la cotización.");
     }
   };
 
@@ -130,18 +136,15 @@ export default function QuotationList({ statusFilter }) {
       const response = await axios.post(
         `http://localhost:8000/api/quotations/${id}/generate-sale/`
       );
-      setSuccessMessage(`✅ Venta generada (ID ${response.data.sale_id})`);
-      console.log("✅ Venta generada:", response.data);
-      alert("Venta generada correctamente ✅");
+
+      toast.success(`✅ Venta generada (ID ${response.data.sale_id})`);
+
 
       // 🔄 refrescar la lista para reflejar el cambio
       fetchQuotations();
 
-      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (error) {
-      console.error("Error al generar la venta:", error);
-      setSuccessMessage("❌ Error al generar la venta");
-      setTimeout(() => setSuccessMessage(null), 4000);
+         toast.warning(`${error.response.data.detail}`, { icon: "❕" });
     }
   };
 
