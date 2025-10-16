@@ -65,8 +65,16 @@ class QuotationSerializer(serializers.ModelSerializer):
         quotation = Quotation.objects.create(**validated_data)
 
         for item_data in items_data:
-            product_id = item_data.get("id")
-            product_instance = Product.objects.filter(id=product_id).first()
+            item_id = item_data.get("id")  # ID del QuotationItem (si existe)
+            product_id = item_data.get("product_id") or item_data.get("product") or item_data.get("product_id") or item_data.get("id")
+
+            # 👇 Si el backend recibe el id del producto como "id", intentamos distinguirlo:
+            if item_id and not Product.objects.filter(id=item_id).exists():
+                # Si el id no pertenece a un producto, entonces es del item.
+                product_instance = None
+            else:
+                product_instance = Product.objects.filter(id=product_id).first()
+
             if not product_instance:
                 continue
 

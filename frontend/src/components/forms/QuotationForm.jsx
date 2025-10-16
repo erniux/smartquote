@@ -27,7 +27,6 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
     axios
     .get(`http://localhost:8000/api/quotations/${quotation.id}/`)
     .then((res) => {
-      console.log("✅ Cotización cargada:", res.data);
       const data = res.data;
 
       setFormData({
@@ -37,7 +36,6 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
       });
     })
     .catch((err) => {
-      console.error("❌ Error al cargar cotización:", err);
       setMessage("❌ No se pudo cargar la cotización");
     });
     }, [quotation]);
@@ -138,7 +136,6 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
         })),
       };
 
-      console.log("🧾 Payload enviado:", payload);
       const response = await axios[method](url, payload);
       setMessage(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
       setTimeout(() => {
