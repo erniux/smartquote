@@ -6,14 +6,6 @@ export default function ProductSelector({ value, onChange, currency = "MXN" }) {
   const [options, setOptions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // 🧩 NUEVO: sincronizar el valor del producto existente con el input
-  useEffect(() => {
-    if (value && typeof value === "object" && value.name) {
-      setQuery(value.name); // muestra el nombre del producto actual
-    }
-  }, [value]);
-
-  // 🔍 Buscar productos cuando el usuario escribe
   useEffect(() => {
     const fetchProducts = async () => {
       if (query.length < 2) {
@@ -41,6 +33,7 @@ export default function ProductSelector({ value, onChange, currency = "MXN" }) {
     let finalPrice = 0;
 
     try {
+      // ⚙️ Si el producto tiene metal_symbol, consultar su precio
       if (product.metal_symbol) {
         const res = await axios.get(
           `http://localhost:8000/api/metalprice/?symbol=${product.metal_symbol}&currency=${currency}`
@@ -48,9 +41,10 @@ export default function ProductSelector({ value, onChange, currency = "MXN" }) {
         if (res.data && res.data.price_local) {
           finalPrice = parseFloat(res.data.price_local);
         } else {
-          finalPrice = parseFloat(product.price || 0);
+          console.warn("⚠ No se encontró precio para el metal:", product.metal_symbol);
         }
       } else {
+        // Si no tiene metal asociado, usar su propio precio
         finalPrice = parseFloat(product.price || 0);
       }
     } catch (error) {
@@ -58,12 +52,12 @@ export default function ProductSelector({ value, onChange, currency = "MXN" }) {
       finalPrice = parseFloat(product.price || 0);
     }
 
-    // 🔁 Enviar el producto seleccionado al formulario padre
+    // 🔁 Devolver al formulario el producto + precio correcto
     onChange({
       id: product.id,
       name: product.name,
       metal_symbol: product.metal_symbol,
-      price: finalPrice,
+      price: finalPrice, // 👈 ahora siempre toma el precio del metal si existe
     });
   };
 
@@ -78,10 +72,10 @@ export default function ProductSelector({ value, onChange, currency = "MXN" }) {
           setShowDropdown(true);
         }}
         onFocus={() => setShowDropdown(true)}
-        className="w-full border border-emerald-700 bg-emerald-900/60 rounded-md px-2 py-1 text-sm text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500"
+        className="w-full border border-emerald-700 bg-emerald-950/40 rounded-md px-2 py-1 text-sm text-slate-100"
       />
       {showDropdown && options.length > 0 && (
-        <ul className="absolute z-10 bg-emerald-950 border border-emerald-700 w-full rounded-md shadow-md mt-1 max-h-40 overflow-y-auto text-sm text-slate-100">
+        <ul className="absolute z-10 bg-emerald-900 border border-emerald-700 w-full rounded-md shadow-md mt-1 max-h-40 overflow-y-auto text-sm text-slate-100">
           {options.map((p) => (
             <li
               key={p.id}

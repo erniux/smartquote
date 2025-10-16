@@ -181,7 +181,10 @@ export default function QuotationList({ statusFilter }) {
                 {/* 🟢 Editar Cotización (solo Draft) */}
                 {q.status === "draft" &&  (
                   <button
-                    onClick={() => setEditingQuotation(q)}
+                    onClick={() => {
+                      console.log("🧩 Editando cotización:", q);
+                      setEditingQuotation(q);
+                    }}
                     className="w-full bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition"
                   >
                     Editar Cotización
