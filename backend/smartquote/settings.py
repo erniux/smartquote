@@ -2,6 +2,10 @@ import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+from django.conf import settings
+from datetime import timedelta
+
+
 
 # -----------------------------
 # BASE DIR
@@ -101,14 +105,15 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-    #    "rest_framework.permissions.IsAuthenticated",
-        'rest_framework.permissions.AllowAny', 
+        "rest_framework.permissions.IsAuthenticated",
     ),
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -129,7 +134,16 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-X_FRAME_OPTIONS = 'ALLOWALL'
+# -----------------------------
+# X-FRAME-OPTIONS (seguridad según entorno)
+# -----------------------------
+if DEBUG:
+    # Permitir iframes en desarrollo (React / Vite y Django en distintos puertos)
+    X_FRAME_OPTIONS = "ALLOWALL"
+else:
+    # En producción solo permitir iframes del mismo dominio
+    X_FRAME_OPTIONS = "SAMEORIGIN"
+
 
 
 # Ejemplo: si quieres tener una carpeta `uploads/` dentro de media
@@ -139,10 +153,27 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # -----------------------------
 # CORS
 # -----------------------------
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # frontend de Vite
-]
+if settings.DEBUG:
+    # Permitir solicitudes desde tu entorno de desarrollo (Vite, React)
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173",
+    ]
+
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    # En producción, especifica el dominio real
+    CORS_ALLOWED_ORIGINS = [
+        "https://metalquotes.mx",  # ejemplo dominio
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "https://metalquotes.mx",
+    ]
 
 
 # -----------------------------

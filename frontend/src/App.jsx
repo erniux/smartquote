@@ -1,29 +1,63 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 import Layout from "./components/layout/Layout";
-import QuotationsPage from "./pages/Quotations/QuotationPage";
-import SalesList from "./pages/Sales/SalesPage";
+import LoginPage from "./pages/Login/LoginPage";
+import QuotationPage from "./pages/Quotations/QuotationPage";
+import SalesPage from "./pages/Sales/SalesPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-<Route path="/ventas" element={<SalesList />} />
-
-
-function App() {
-  const mockUser = {
-    name: "Erna Tercero",
-    email: "erniux@esmeralda.mx",
-  };
+function AppContent() {
+  const { user } = useContext(AuthContext);
 
   return (
-    <Layout user={mockUser}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/quotations" />} />
-        <Route path="/quotations" element={<QuotationsPage />} />
-        <Route path="/sales" element={<SalesList />} />
-        <Route path="*" element={<p>Página no encontrada</p>} />
-      </Routes>
-    </Layout>
+    <>
+      {user ? (
+        // ✅ Usuario autenticado → mostrar Layout completo
+        <Layout>
+          <Routes>
+            <Route
+              path="/quotations"
+              element={
+                <ProtectedRoute>
+                  <QuotationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales"
+              element={
+                <ProtectedRoute>
+                  <SalesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/quotations" />} />
+          </Routes>
+        </Layout>
+      ) : (
+        // 🚪 Usuario no autenticado → mostrar Login a pantalla completa
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+        <ToastContainer position="bottom-right" autoClose={2500} theme="colored" />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
 export default App;
-

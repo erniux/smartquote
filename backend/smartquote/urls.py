@@ -18,6 +18,8 @@ urlpatterns = [
     path('api/', include('quotations.urls')),
     path("api/", include("services.urls")),
     path("api/", include("sales.urls")),
+    path("api/", include("users.urls")),
+
 
     
 

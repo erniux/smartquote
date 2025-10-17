@@ -2,25 +2,19 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-const Layout = ({ children, user, logo }) => {
+const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col flex-1 min-h-screen overflow-y-auto">
       {/* 🔝 Topbar */}
-      <Topbar
-        user={user}
-        logo={logo}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+      <Topbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* 📱 Sidebar en móviles */}
         <div
           className={`fixed inset-y-0 left-0 z-40 bg-gray-800 text-white transform ${
-            isSidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-64`}
         >
           <Sidebar onClose={() => setIsSidebarOpen(false)} />
