@@ -5,18 +5,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
 
-
 from quotations.serializers import QuotationSerializer
 from sales.models import Sale 
 from quotations.models import Quotation, QuotationItem, QuotationExpense
 from users.permissions import IsCompanyMemberOrAdmin
-
+from quotations.permissions import QuotationPermission
 
 
 class QuotationViewSet(viewsets.ModelViewSet):
 
     serializer_class = QuotationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCompanyMemberOrAdmin]
+    permission_classes = [permissions.IsAuthenticated, QuotationPermission]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['customer_name', 'customer_email']
     filterset_fields = {'date': ['gte', 'lte'], 'status': ['exact']}
@@ -34,10 +33,11 @@ class QuotationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="generate-sale")
     def generate_sale(self, request, pk=None):
-        """
-        Genera una venta a partir de una cotización.
-        """
         quotation = self.get_object()
+
+        if request.user.role not in ["manager", "admin"]:
+            return Response({"detail": "No tiene permiso para realizar esta acción."},
+                    status=status.HTTP_403_FORBIDDEN)
 
         # 🚫 Evitar duplicados
         if hasattr(quotation, "sale"):
@@ -91,6 +91,10 @@ class QuotationViewSet(viewsets.ModelViewSet):
         """
         original = self.get_object()
 
+        if request.user.role not in ["manager", "admin"]:
+            return Response({"detail": "No tiene permiso para realizar esta acción."},
+                    status=status.HTTP_403_FORBIDDEN)
+
         with transaction.atomic():
             # Crear nueva cotización
             new_quotation = Quotation.objects.create(
@@ -134,6 +138,10 @@ class QuotationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="cancel")
     def cancel_quotation(self, request, pk=None):
         quotation = self.get_object()
+
+        if request.user.role not in ["manager", "admin"]:
+            return Response({"detail": "No tiene permiso para realizar esta acción."},
+                    status=status.HTTP_403_FORBIDDEN)
 
         if quotation.status == "cancelled":
             return Response({"detail": "Esta cotización ya está cancelada."},

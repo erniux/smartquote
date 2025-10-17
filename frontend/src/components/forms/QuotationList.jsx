@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosClient from "../../api/axiosClient";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { UserIcon } from "@heroicons/react/24/outline";
 import QuotationModal from "../modals/QuotationModal";
 import QuotationForm from "./QuotationForm.jsx";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+
 
 export default function QuotationList({ statusFilter, searchTerm, startDate, endDate }) {
+  const { user } = useContext(AuthContext);
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
@@ -17,7 +21,7 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
   const [cancelReason, setCancelReason] = useState("");
   const [quotationToCancel, setQuotationToCancel] = useState(null);
 
-  const API_URL = "http://localhost:8000/api/quotations/";
+  const API_URL = "/quotations/";
 
   useEffect(() => {
     fetchQuotations();
@@ -25,7 +29,7 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
 
   const fetchQuotations = async () => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await axiosClient.get(API_URL);
       setQuotations(response.data);
     } catch (error) {
       console.error("Error al obtener cotizaciones:", error);
@@ -56,8 +60,8 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
 
   const handleDuplicate = async (id) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/api/quotations/${id}/duplicate/`
+      const response = await axiosClient.post(
+        `/quotations/${id}/duplicate/`
       );
       setSuccessMessage(response.data.detail);
       fetchQuotations();
@@ -84,8 +88,8 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
     }
 
     try {
-      const res = await axios.post(
-        `http://localhost:8000/api/quotations/${quotationToCancel}/cancel/`,
+      const res = await axiosClient.post(
+        `/quotations/${quotationToCancel}/cancel/`,
         { reason: cancelReason }
       );
 
@@ -108,8 +112,8 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
 
   const handleGenerateSale = async (id) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/api/quotations/${id}/generate-sale/`
+      const response = await axiosClient.post(
+        `/quotations/${id}/generate-sale/`
       );
 
       toast.success(`✅ Venta generada (ID ${response.data.sale_id})`);
