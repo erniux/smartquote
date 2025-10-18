@@ -58,9 +58,20 @@ import axios from "axios";
     setUser(null);
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, accessToken, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+return (
+  <AuthContext.Provider value={{ user, login, logout, accessToken, loading }}>
+    {loading ? (
+      // 🕓 Pantalla de carga temporal mientras valida el token
+      <div className="flex items-center justify-center h-screen bg-emerald-900 text-white">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-emerald-400 mx-auto"></div>
+          <p className="text-emerald-200 text-sm">Verificando sesión...</p>
+        </div>
+      </div>
+    ) : (
+      children
+    )}
+  </AuthContext.Provider>
+);
+
 };

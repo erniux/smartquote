@@ -1,7 +1,12 @@
+import { createPortal } from "react-dom";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosClient from "../../api/axiosClient";
 import ProductSelector from "./ProductSelector.jsx";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+
+
+
 
 export default function QuotationForm({ quotation = null, onClose, onSuccess }) {
   const isEditing = !!quotation;
@@ -26,7 +31,7 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
     if (!quotation || !quotation.id) return;
 
     axios
-    .get(`http://localhost:8000/api/quotations/${quotation.id}/`)
+    .get(`/quotations/${quotation.id}/`)
     .then((res) => {
       const data = res.data;
 
@@ -105,8 +110,8 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
 
     try {
       const url = isEditing
-        ? `http://localhost:8000/api/quotations/${quotation.id}/`
-        : "http://localhost:8000/api/quotations/";
+        ? `/quotations/${quotation.id}/`
+        : "/quotations/";
       const method = isEditing ? "put" : "post";
 
       const totals = calculateTotals(formData);
@@ -139,7 +144,7 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
         })),
       };
 
-      const response = await axios[method](url, payload);
+      const response = await axiosClient[method](url, payload);
       //setMessage(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
       toast.success(isEditing ? "✅ Cotización actualizada" : "✅ Cotización creada");
       setTimeout(() => {
@@ -159,11 +164,19 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
   // ================================
   if (!formData) {
     return null;
-  }
+ }
+  console.log("🟢 Se está renderizando el modal QuotationForm");
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style={{ backdropFilter: "blur(4px)" }}>
-      <div className="bg-emerald-900 p-8 rounded-lg text-white w-11/12 md:w-2/3 lg:w-1/2 relative shadow-lg">
+    
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]" style={{ backdropFilter: "blur(4px)" }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.25 }}
+          className="bg-emerald-900 p-8 rounded-lg text-white w-11/12 md:w-2/3 lg:w-1/2 relative shadow-2xl border border-emerald-700"
+        >
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-200 hover:text-white text-xl">
           ✖
         </button>
@@ -348,7 +361,8 @@ export default function QuotationForm({ quotation = null, onClose, onSuccess }) 
             {message && <p className="text-center text-sm mt-2">{message}</p>}
           </div>
         </form>
-      </div>
+      
+      </motion.div>
     </div>
   );
 }

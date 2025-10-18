@@ -20,6 +20,8 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [quotationToCancel, setQuotationToCancel] = useState(null);
+  
+
 
   const API_URL = "/quotations/";
 
@@ -135,18 +137,36 @@ export default function QuotationList({ statusFilter, searchTerm, startDate, end
     );
   }
   
+  console.log("🧩 Estado creating:", creating);
 
   return (
     
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="flex justify-between items-center mb-6">
+      {creating && (
+  <>
+    {console.log("🧱 Renderizando QuotationForm")}
+    <QuotationForm
+      quotation={null}
+      onClose={() => setCreating(false)}
+      onSuccess={() => {
+        setCreating(false);
+        fetchQuotations();
+      }}
+    />
+  </>
+)}
+
+      {user && ["vendedor", "manager", "admin"].includes(user.role) && (
         <button
-          onClick={() => setCreating(true)}
+          onClick={() => {
+            console.log("🟢 setCreating(true) ejecutado");
+            setCreating(true);
+          }}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition"
         >
           + Nueva Cotización
         </button>
-      </div>
+      )}
 
       {successMessage && (
         <div className="bg-emerald-100 border border-emerald-400 text-emerald-800 px-4 py-2 rounded mb-4 text-center">

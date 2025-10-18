@@ -38,4 +38,6 @@ def profile_view(request):
         "id": user.id,
         "username": user.username,
         "email": user.email,
+        "role": user.role,
+        "company": user.company.name if user.company else None,
     })
