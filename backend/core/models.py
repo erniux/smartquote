@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 
 class Product(models.Model):
     name = models.CharField("Nombre", max_length=100)
