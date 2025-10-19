@@ -11,6 +11,8 @@ import SalesPage from "./pages/Sales/SalesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProductsPage from "./pages/Products/ProductsPage";
 import MetalsPage from "./pages/Metals/MetalsPage";
+import SalesReport from "./pages/Reports/SalesReport";
+import QuotationsReport from "./pages/Reports/QuotationsReport";
 
 function AppContent() {
   const { user } = useContext(AuthContext);
@@ -52,6 +54,8 @@ function AppContent() {
                      <MetalsPage /> 
                   </ProtectedRoute>
                } />
+            <Route path="/reports/sales" element={<SalesReport />} />
+            <Route path="/reports/quotations" element={<QuotationsReport />} />
           </Routes>
         </Layout>
       ) : (

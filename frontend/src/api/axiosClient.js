@@ -92,6 +92,17 @@ export const getMetals = async () => {
   }
 };
 
+// 🔹 Obtener reporte de cotizaciones con filtros
+export const getQuotationReport = async (params = {}) => {
+  const response = await axiosClient.get("quotations/", { params });
+  return response.data;
+};
+
+// 🔹 Obtener reporte de ventas con filtros
+export const getSalesReport = async (params = {}) => {
+  const response = await axiosClient.get("sales/", { params });
+  return response.data;
+};
 
 
 
