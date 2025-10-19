@@ -3,17 +3,16 @@ from datetime import datetime
 
 # 🧱 Lista oficial de commodities/metales verificados en Yahoo Finance
 TICKERS = {
-    # --- Metales ---
-    "ALUMINUM": "ALI=F",     # Aluminum Futures
-    "IRON": "TIO=F",         # Iron Ore 62% Fe, CFR China
-    "COPPER": "HG=F",        # High-Grade Copper Futures
-    "GOLD": "GC=F",          # Gold Futures
-    "SILVER": "SI=F",        # Silver Futures
-
-    # --- Materiales de construcción ---
-    "LUMBER": "LBR=F",       # Lumber Futures
-    "PVC": "PVC-USD",        # PVC/USD (valor de referencia)
+    "GOLD": "GC=F",        # Oro (onza troy)
+    "SILVER": "SI=F",      # Plata (onza troy)
+    "COPPER": "HG=F",      # Cobre (libra)
+    "ALUMINUM": "ALI=F",   # Aluminio (tonelada)
+    "IRON": "TIO=F",       # Mineral de hierro (tonelada)
+    "LUMBER": "LBR=F",     # Madera (mil pies tablares)
+    "OIL": "CL=F",         # 🛢️ Crude Oil (Petróleo, USD/barril)
+    "GAS": "NG=F",         # 🔥 Natural Gas (USD/MMBtu)
 }
+
 
 # 💱 Divisas (para futuras conversiones)
 CURRENCIES = {

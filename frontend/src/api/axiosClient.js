@@ -78,7 +78,22 @@ export const uploadProductCSV = async (file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
+
 };
+
+// ✅ Obtener lista de metales
+export const getMetals = async () => {
+  try {
+    const response = await axiosClient.get("metals/");
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al obtener metales:", error);
+    throw error;
+  }
+};
+
+
+
 
 
 export default axiosClient;

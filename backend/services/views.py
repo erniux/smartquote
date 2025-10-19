@@ -26,6 +26,15 @@ class MetalPriceDetailView(APIView):
         serializer = MetalPriceSerializer(metal, context={"request": request})
         return Response(serializer.data)
 
+from rest_framework import generics
+
+class MetalPriceListView(generics.ListAPIView):
+    """
+    Lista todos los metales registrados en la base de datos.
+    """
+    queryset = MetalPrice.objects.all().order_by("-last_updated")
+    serializer_class = MetalPriceSerializer
+
 
 @api_view(["GET"])
 def get_yfinance_prices_view(request):
@@ -56,3 +65,13 @@ def update_prices_view(request):
         return Response({"message": "Precios y tasas actualizados correctamente"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(["GET"])
+def get_price_local_view(request):
+    """
+    Retorna los precios locales (convertidos a MXN u otra moneda) usando el serializer.
+    """
+    metals = MetalPrice.objects.all()
+    serializer = MetalPriceSerializer(metals, many=True, context={"request": request})
+    return Response(serializer.data)

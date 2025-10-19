@@ -16,6 +16,8 @@ class Command(BaseCommand):
         "ALUMINUM": "toneladas",
         "IRON": "toneladas",
         "LUMBER": "bd. ft.",
+        "OIL": "barril",
+        "GAS": "MMBtu",
     }
 
     # Cantidades base por símbolo
@@ -27,6 +29,8 @@ class Command(BaseCommand):
         "ALUMINUM": 1,
         "IRON": 1,
         "LUMBER": 1,
+        "OIL": 1,
+        "GAS": 1,
     }
 
     def handle(self, *args, **options):

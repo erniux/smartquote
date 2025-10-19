@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import QuotationList from "../../components/forms/QuotationList.jsx";
+import QuotationList from "./QuotationList.jsx";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 
 const QuotationPage = () => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SalesList from "../../components/forms/SalesList.jsx";
+import SalesList from "../../pages/Sales/SalesList.jsx";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 
 const SalesPage = () => {

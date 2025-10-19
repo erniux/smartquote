@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState, useContext } from "react";
+import axiosClient from "../../api/axiosClient.js";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { UserIcon } from "@heroicons/react/24/outline";
-import PaymentModal from "../modals/PaymentModal.jsx";
-import InvoiceModal from "../modals/InvoiceModal.jsx";
-import QuotationModal from "../modals/QuotationModal.jsx";
+import PaymentModal from "../../components/modals/PaymentModal.jsx";
+import InvoiceModal from "../../components/modals/InvoiceModal.jsx";
+import QuotationModal from "../../components/modals/QuotationModal.jsx";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 export default function SalesList({ statusFilter, searchTerm, startDate, endDate }) {
+  const { user } = useContext(AuthContext);
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API_BASE = "http://localhost:8000/api/sales/";
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
   const [showQuotationModal, setShowQuotationModal] = useState(false);
@@ -18,6 +18,7 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState(null);
 
+  const API_URL = "/sales/"
   const formatCurrency = (value) => {
     if (value == null) return "$0.00";
     return new Intl.NumberFormat("es-MX", {
@@ -33,9 +34,10 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
 
   const fetchSales = async () => {
     try {
-      const response = await axios.get(API_BASE);
+      const response = await axiosClient.get(API_URL);
       setSales(response.data);
     } catch (error) {
+      console.log("Error al obtener ventas", error)
       toast.error("❌ Error al cargar las ventas");
     } finally {
       setLoading(false);
@@ -44,7 +46,7 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
 
   const openQuotationModal = async (quotationId) => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/quotations/${quotationId}/`);
+      const response = await axiosClient.get(`/quotations/${quotationId}/`);
       setSelectedQuotation(response.data);
       setShowQuotationModal(true);
     } catch (error) {
@@ -54,7 +56,7 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
 
   const markDelivered = async (id) => {
     try {
-      await axios.post(`${API_BASE}${id}/mark_delivered/`);
+      await axiosClient.post(`${API_URL}${id}/mark_delivered/`);
       toast.success("🚚 Venta marcada como entregada");
       fetchSales();
     } catch {
@@ -64,7 +66,7 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
 
   const markClosed = async (id) => {
     try {
-      await axios.post(`${API_BASE}${id}/mark_closed/`);
+      await axiosClient.post(`${API_URL}${id}/mark_closed/`);
       toast.success("✅ Venta cerrada y factura generada");
       fetchSales();
     } catch {
@@ -87,14 +89,14 @@ export default function SalesList({ statusFilter, searchTerm, startDate, endDate
     else if (nuevoTotal > 0 && nuevoTotal < total) newStatus = "partially_paid";
 
     try {
-      await axios.post(`${API_BASE}${sale.id}/add_payment/`, {
+      await axiosClient.post(`${API_URL}${sale.id}/add_payment/`, {
         amount,
         method,
         note,
       });
 
       if (newStatus !== sale.status) {
-        await axios.patch(`${API_BASE}${sale.id}/`, { status: newStatus });
+        await axiosClient.patch(`${API_URL}${sale.id}/`, { status: newStatus });
       }
 
       toast.success(`💰 Pago registrado (${newStatus.toUpperCase()})`);

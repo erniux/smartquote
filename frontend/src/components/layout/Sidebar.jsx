@@ -18,7 +18,6 @@ const Sidebar = ({ onClose }) => {
   const menu = [
     { name: "Cotizaciones", icon: <FaClipboardList />, path: "/quotations" },
     { name: "Ventas", icon: <FaShoppingCart />, path: "/sales" },
-    { name: "Facturas", icon: <FaFileInvoiceDollar />, path: "/invoices" },
     { name: "Metales", icon: <FaBoxes />, path: "/metals" },
     { name: "Productos", icon: <FaBoxOpen />, path: "/products" },
     { name: "Reportes", icon: <FaChartBar />, path: "/reports" },

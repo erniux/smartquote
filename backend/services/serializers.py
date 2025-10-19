@@ -14,10 +14,15 @@ class MetalPriceSerializer(serializers.ModelSerializer):
         fields = [
             "symbol",
             "price_usd",
-            "price_with_margin_usd",
-            "price_local",
             "currency",
             "last_updated",
+            "base_quantity",
+            "last_updated",
+            "price_with_margin_usd",
+            "price_local",
+            "measure_units",
+            "currency",
+
         ]
 
     def get_price_with_margin_usd(self, obj):

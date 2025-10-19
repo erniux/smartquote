@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import React, { useState, useEffect } from "react";
-import axiosClient from "../../api/axiosClient";
+import axiosClient from "../../api/axiosClient.js";
 import ProductSelector from "./ProductSelector.jsx";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";

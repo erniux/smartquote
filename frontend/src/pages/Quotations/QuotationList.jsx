@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import axiosClient from "../../api/axiosClient";
+import React, { useEffect, useState, useContext } from "react";
+import axiosClient from "../../api/axiosClient.js";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { UserIcon } from "@heroicons/react/24/outline";
-import QuotationModal from "../modals/QuotationModal";
+import QuotationModal from "../../components/modals/QuotationModal.jsx";
 import QuotationForm from "./QuotationForm.jsx";
-import { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 
 export default function QuotationList({ statusFilter, searchTerm, startDate, endDate }) {

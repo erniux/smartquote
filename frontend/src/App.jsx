@@ -10,6 +10,7 @@ import QuotationPage from "./pages/Quotations/QuotationPage";
 import SalesPage from "./pages/Sales/SalesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProductsPage from "./pages/Products/ProductsPage";
+import MetalsPage from "./pages/Metals/MetalsPage";
 
 function AppContent() {
   const { user } = useContext(AuthContext);
@@ -38,8 +39,19 @@ function AppContent() {
             />
             <Route 
                path="/products" 
-               element={<ProductsPage />} />
-            <Route path="*" element={<Navigate to="/quotations" />} />
+               element={
+                  <ProtectedRoute>
+                     <ProductsPage /> 
+                  </ProtectedRoute>
+               } />
+            
+            <Route 
+              path="/metals" 
+              element={
+                  <ProtectedRoute>
+                     <MetalsPage /> 
+                  </ProtectedRoute>
+               } />
           </Routes>
         </Layout>
       ) : (
