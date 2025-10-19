@@ -9,6 +9,11 @@ import LoginPage from "./pages/Login/LoginPage";
 import QuotationPage from "./pages/Quotations/QuotationPage";
 import SalesPage from "./pages/Sales/SalesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProductsPage from "./pages/Products/ProductsPage";
+
+
+
+
 
 function AppContent() {
   const { user } = useContext(AuthContext);
@@ -35,6 +40,9 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route 
+               path="/products" 
+               element={<ProductsPage />} />
             <Route path="*" element={<Navigate to="/quotations" />} />
           </Routes>
         </Layout>

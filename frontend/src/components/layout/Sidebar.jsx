@@ -8,6 +8,7 @@ import {
   FaChartBar,
   FaTimes,
   FaSignOutAlt,
+  FaBoxOpen,
 } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -19,6 +20,7 @@ const Sidebar = ({ onClose }) => {
     { name: "Ventas", icon: <FaShoppingCart />, path: "/sales" },
     { name: "Facturas", icon: <FaFileInvoiceDollar />, path: "/invoices" },
     { name: "Metales", icon: <FaBoxes />, path: "/metals" },
+    { name: "Productos", icon: <FaBoxOpen />, path: "/products" },
     { name: "Reportes", icon: <FaChartBar />, path: "/reports" },
   ];
 

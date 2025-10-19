@@ -4,10 +4,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Sale
 from .serializers import SaleSerializer, PaymentSerializer
+from .permissions import SalePermission
+
+
 
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all().select_related("quotation").prefetch_related("payments")
     serializer_class = SaleSerializer
+    permission_classes = [SalePermission, SalePermission]
 
     @action(detail=True, methods=["post"])
     def mark_delivered(self, request, pk=None):
