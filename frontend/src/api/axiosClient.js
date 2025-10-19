@@ -48,4 +48,37 @@ export const getProducts = async () => {
   return response.data;
 };
 
+// Crear producto
+export const createProduct = async (productData) => {
+  const response = await axiosClient.post("products/", productData);
+  return response.data;
+};
+
+// Descargar layout CSV
+export const downloadProductCSVLayout = async () => {
+  const response = await axiosClient.get("products/csv_layout/", {
+    responseType: "blob", // 👈 importante: descarga como archivo
+  });
+
+  // Crea un enlace temporal para forzar la descarga
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "productos_layout.csv");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
+// Subir CSV
+export const uploadProductCSV = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await axiosClient.post("products/upload_csv/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+
 export default axiosClient;

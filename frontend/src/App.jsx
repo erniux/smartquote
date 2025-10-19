@@ -11,10 +11,6 @@ import SalesPage from "./pages/Sales/SalesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProductsPage from "./pages/Products/ProductsPage";
 
-
-
-
-
 function AppContent() {
   const { user } = useContext(AuthContext);
 
