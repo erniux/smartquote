@@ -58,39 +58,55 @@ const ProductsPage = () => {
   );
 
   return (
-    <PageContainer
-      title="Productos"
-      actions={
-        <>
-          {/* 📥 Descargar layout */}
-          <button
-            onClick={handleDownloadLayout}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg"
-          >
-            📥 Descargar Layout
-          </button>
+<PageContainer
+actions={
+    <>
+      <button
+        onClick={handleDownloadLayout}
+        className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg"
+      >
+        📥 Descargar Layout
+      </button>
 
-          {/* 📤 Cargar CSV */}
-          <label className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg cursor-pointer">
-            📤 Cargar CSV
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleCSVUpload}
-              className="hidden"
-            />
-          </label>
+      <label className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg cursor-pointer">
+        📤 Cargar CSV
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleCSVUpload}
+          className="hidden"
+        />
+      </label>
 
-          {/* ➕ Nuevo producto */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg"
-          >
-            ➕ Nuevo Producto
-          </button>
-        </>
-      }
-    >
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg"
+      >
+        ➕ Nuevo Producto
+      </button>
+    </>
+  }
+>
+      {/* Título */}
+      <h1 className="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+        <FaBoxOpen className="h-8 w-8 text-emerald-600" />
+        Productos
+      </h1>
+
+
+      {/* Lista de productos */}
+      {filteredProducts.length === 0 ? (
+        <p className="text-gray-400 text-center py-10">
+          No hay productos registrados.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Cards de productos */}
+        </div>
+      )}
+
+
+
       {/* --- Barra de búsqueda --- */}
       <div className="flex items-center gap-3 mb-6 bg-green-900 rounded-lg px-3 py-2">
         <input
