@@ -26,5 +26,26 @@ services:
     ports:
       - "5543:5432"
 
+  ai_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_agent
+    command: tail -f /dev/null
+    volumes:
+      - .:/app
+      - ./ai_agent:/ai_agent
+      - ~/.ollama:/root/.ollama
+    environment:
+      - ENVIRONMENT=local
+      - BACKEND_URL=http://web:8000/api/
+      - USE_OLLAMA=true
+      - OLLAMA_MODEL=llama3:70b
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_DEBUG=1 
+    depends_on:
+      - web
+
+
 volumes:
   postgres_data:
