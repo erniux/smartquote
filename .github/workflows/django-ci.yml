@@ -37,9 +37,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Install dependencies
-        run: |
-          pip install -r backend/requirements.txt
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Install AI Agent dependencies
+        run: pip install -r backend/ai_agent/requirements.txt
+
       - name: Run tests
         run: |
           cd backend
