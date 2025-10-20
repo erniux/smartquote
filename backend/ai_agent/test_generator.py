@@ -20,13 +20,13 @@ class ApiTestGenerator:
         context = "\n\n".join([f"# --- {path} ---\n{content}" for path, content in files.items()])
 
         prompt = ChatPromptTemplate.from_template("""
-Eres un experto en pruebas automatizadas con pytest y Django REST.
-A partir del siguiente código (serializers, views y models),
-genera pruebas para endpoints CRUD principales.
+            Eres un experto en pruebas automatizadas con pytest y Django REST.
+            A partir del siguiente código (serializers, views y models),
+            genera pruebas para endpoints CRUD principales.
 
-{context}
+            {context}
 
-Responde con un archivo pytest funcional.
+            Responde con un archivo pytest funcional.
         """)
 
         result = self.model.invoke(prompt.format(context=context))
