@@ -25,7 +25,12 @@ jobs:
       - name: ⚙️ Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+           if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "⚠️ No requirements.txt found, installing base deps..."
+            pip install pytest pytest-bdd rich tqdm openai python-dotenv
+          fi
           pip install pytest pytest-bdd
 
       - name: 🧠 Run AI Agent
