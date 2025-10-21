@@ -18,11 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Instalar dependencias del agente si existen
-RUN if [ -f /app/ai_agent/requirements.txt ]; then \
-      pip install --no-cache-dir -r /app/ai_agent/requirements.txt; \
-    fi
-
 EXPOSE 8000
 CMD ["gunicorn", "smartquote.wsgi:application", "--bind", "0.0.0.0:8000"]
 
