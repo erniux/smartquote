@@ -38,7 +38,6 @@ jobs:
           PROJECT_BASE_PATH: ${{ github.workspace }}
         run: |
           echo "🚀 Ejecutando AI Agent..."
-          cd ai_agent
           python run_agent.py
 
       - name: 🧪 Run pytest-bdd on generated features
