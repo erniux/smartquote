@@ -1,49 +1,67 @@
 import os
-from textwrap import wrap
+
 
 class CodeReader:
     """
-    Lee automáticamente las apps Django dentro de /app y
-    extrae solo los archivos models.py, serializers.py y views.py.
-    Ignora migraciones, tests y otros archivos no relevantes.
-    Divide el texto en "chunks" manejables para evitar errores de memoria o truncado.
+    Clase para leer y filtrar archivos relevantes de una o varias apps Django.
+    Permite limitar por nombre de app y seleccionar solo los archivos necesarios
+    (models, views, serializers, utils, etc.).
     """
 
-    def __init__(self, base_dir="/app", max_chunk_size=2000):
-        self.base_dir = base_dir
-        self.allowed_files = {"models.py", "serializers.py", "views.py"}
-        self.max_chunk_size = max_chunk_size  # número de caracteres por bloque
-
-    def _is_django_app(self, path):
-        """Verifica si una carpeta parece una app Django (contiene models.py o apps.py)."""
-        return any(os.path.exists(os.path.join(path, f)) for f in ["models.py", "apps.py"])
-
-    def _chunk_text(self, text):
-        """Divide texto largo en fragmentos manejables."""
-        # wrap divide en trozos sin cortar palabras
-        return wrap(text, self.max_chunk_size)
+    def __init__(self, app_name=None):
+        self.app_name = app_name
+        self.base_path = "/app"
+        self.extensions = [".py"]
+        self.key_files = ["models.py", "views.py", "serializers.py", "utils.py"]
 
     def read_files(self):
-        context_chunks = []
+        """
+        Recorre el proyecto y lee solo los archivos relevantes.
+        Retorna un diccionario con {ruta: contenido}.
+        """
+        print("📘 Leyendo estructura de código...")
 
-        files = dict(list(files.items())[:5])
-        for root, _, files in os.walk(self.base_dir):
-            # Evitar migraciones y tests
-            if "migrations" in root or "tests" in root:
-                continue
+        if self.app_name:
+            app_path = os.path.join(self.base_path, self.app_name)
+            if not os.path.exists(app_path):
+                print(f"⚠️ La app '{self.app_name}' no existe en {self.base_path}. Se usará fallback.")
+                return self._fallback_all_apps()
+            return self._read_app(app_path)
+        else:
+            return self._fallback_all_apps()
 
-            if not self._is_django_app(root):
-                continue
-
-            for f in files:
-                if f in self.allowed_files:
-                    path = os.path.join(root, f)
+    def _read_app(self, app_path):
+        """Lee solo los archivos relevantes dentro de una app específica."""
+        files = {}
+        for root, _, filenames in os.walk(app_path):
+            for filename in filenames:
+                if filename in self.key_files and any(filename.endswith(ext) for ext in self.extensions):
+                    full_path = os.path.join(root, filename)
                     try:
-                        with open(path, "r", encoding="utf-8") as file:
-                            content = file.read()
-                            for chunk in self._chunk_text(content):
-                                context_chunks.append(f"# --- {path} ---\n{chunk}")
+                        with open(full_path, "r", encoding="utf-8") as f:
+                            content = f.read()
+                            files[full_path] = content
+                            print(f"📄 Archivo leído: {full_path}")
                     except Exception as e:
-                        print(f"⚠️ No se pudo leer {path}: {e}")
+                        print(f"⚠️ Error leyendo {full_path}: {e}")
+        if not files:
+            print(f"⚠️ No se encontraron archivos relevantes en '{self.app_name}', usando fallback global.")
+            return self._fallback_all_apps()
+        return files
 
-        return context_chunks
+    def _fallback_all_apps(self):
+        """Lee los archivos relevantes de todas las apps del proyecto."""
+        files = {}
+        for root, _, filenames in os.walk(self.base_path):
+            for filename in filenames:
+                if filename in self.key_files and any(filename.endswith(ext) for ext in self.extensions):
+                    full_path = os.path.join(root, filename)
+                    try:
+                        with open(full_path, "r", encoding="utf-8") as f:
+                            content = f.read()
+                            files[full_path] = content
+                            print(f"📄 Archivo leído (fallback): {full_path}")
+                    except Exception as e:
+                        print(f"⚠️ Error leyendo {full_path}: {e}")
+        print(f"✅ Total de archivos relevantes encontrados: {len(files)}")
+        return files

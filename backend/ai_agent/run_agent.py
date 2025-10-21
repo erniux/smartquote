@@ -1,20 +1,50 @@
-import sys
-import os
-sys.path.append("/ai_agent")
+import argparse
 from ai_agent.test_generator import ApiTestGenerator
 
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="🤖 AI Agent - Generador Inteligente de Pruebas Automatizadas"
+    )
+
+    parser.add_argument(
+        "--app",
+        type=str,
+        help="Nombre de la app a procesar (por ejemplo: quotations, sales, products)",
+    )
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Modo rápido: procesa solo los primeros 3 archivos.",
+    )
+    parser.add_argument(
+        "--export",
+        action="store_true",
+        help="Exporta el archivo generado a /app/outputs/tests/",
+    )
+    parser.add_argument(
+        "--fallback",
+        action="store_true",
+        help="Si no se encuentra la app, analiza todo el proyecto.",
+    )
+
+    args = parser.parse_args()
+
+    print("\n🧠 Iniciando el agente con modo debug...\n")
+
+    try:
+        generator = ApiTestGenerator(
+            fast_mode=args.fast,
+            app_name=args.app,
+            export=args.export,
+            fallback=args.fallback,
+        )
+        generator.generate_tests()
+    except KeyboardInterrupt:
+        print("\n⛔ Ejecución interrumpida por el usuario.")
+    except Exception as e:
+        print(f"\n❌ Error crítico en la ejecución del agente: {e}")
+
+
 if __name__ == "__main__":
-    # Desactivar conexión con LangSmith (modo local)
-    os.environ["LANGCHAIN_TRACING_V2"] = "false"
-    os.environ["LANGCHAIN_PROJECT"] = "local-agent"
-    os.environ["LANGCHAIN_API_KEY"] = ""
-    os.environ["LANGCHAIN_ENDPOINT"] = ""
-    os.environ["LANGCHAIN_DEBUG"] = "true"
-    os.environ["LANGCHAIN_VERBOSE"] = "true"
-
-
-    print("🧠 Iniciando el agente con modo debug...\n")
-    generator = ApiTestGenerator()
-    generator.generate_tests()
-
-    print("\n✅ Proceso completado.")
+    main()
