@@ -1,5 +1,6 @@
 import argparse
 from ai_agent.test_generator import ApiTestGenerator
+from feature_generator import FeatureGenerator
 
 
 def main():
@@ -48,3 +49,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    feature_gen = FeatureGenerator(source_path="src", output_dir="features")
+    feature_gen.generate_feature_files()
