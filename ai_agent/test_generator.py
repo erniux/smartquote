@@ -1,9 +1,9 @@
 import os
 import json
-import httpx
 import time
+import httpx
+import ollama
 from datetime import datetime
-from langchain_ollama import ChatOllama
 from ai_agent.reader import CodeReader
 from ai_agent.config import Config
 
@@ -25,17 +25,16 @@ class ApiTestGenerator:
         print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
         print(f"🧩 Conectando cliente Ollama en {self.config.OLLAMA_BASE_URL} ...")
 
-        self.model = ChatOllama(
-            model=self.config.OLLAMA_MODEL,
-            base_url=self.config.OLLAMA_BASE_URL,
-            temperature=0.2,
-        )
+        # Crear cliente oficial de Ollama
+        self.client = ollama.Client(host=self.config.OLLAMA_BASE_URL.strip())
 
         # Verificar que Ollama esté disponible
         self.wait_for_ollama(self.config.OLLAMA_BASE_URL)
+        print(f"✅ Cliente Ollama inicializado correctamente en {self.config.OLLAMA_BASE_URL}")
 
-        print(f"🧠 Usando cliente directo de Ollama en {self.config.OLLAMA_BASE_URL}")
-
+    # ----------------------------
+    # 🔍 Verificación de disponibilidad
+    # ----------------------------
     def wait_for_ollama(self, url, timeout=60):
         """Verifica que Ollama esté corriendo antes de iniciar."""
         print(f"🕓 Verificando conexión con Ollama en {url} ...")
@@ -50,6 +49,9 @@ class ApiTestGenerator:
                 time.sleep(3)
         raise ConnectionError("❌ Ollama no respondió en el tiempo esperado.")
 
+    # ----------------------------
+    # ⚙️  Generador principal de pruebas
+    # ----------------------------
     def generate_tests(self):
         """Genera los tests automáticamente a partir del código fuente."""
         os.makedirs(self.output_dir, exist_ok=True)
@@ -72,9 +74,25 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
 ### Archivo: {path}
 {content}
 """
-                response = self.model.invoke(prompt)
-                test_code = response.content if hasattr(response, "content") else str(response)
-                all_tests.append(f"# ==== Tests para {os.path.basename(path)} ====\n{test_code}\n")
+                print(f"🔄 Enviando prompt a Ollama ({self.config.OLLAMA_BASE_URL})...")
+                print(f"🔄 Enviando prompt ({len(prompt)} chars)...")
+                try:
+                    start_block = time.time()
+                    response = self.client.chat(
+                        model=self.config.OLLAMA_MODEL,
+                        messages=[{"role": "user", "content": prompt}],
+                    )
+                    elapsed = round(time.time() - start_block, 2)
+                    content = response["message"]["content"]
+                    print(f"✅ Respuesta recibida en {elapsed}s: {content[:150]}...")
+                except Exception as e:
+                    print(f"⚠️ Error procesando bloque {i}: {e}")
+
+
+                answer = response["message"]["content"]
+                print(f"💬 Respuesta de Ollama: {answer[:120]}...")
+
+                all_tests.append(f"# ==== Tests para {os.path.basename(path)} ====\n{answer}\n")
                 print(f"✅ Bloque {i} procesado correctamente.")
             except Exception as e:
                 print(f"⚠️ Error procesando bloque {i}: {e}")
@@ -88,12 +106,22 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
         if self.export:
             self.export_results(output_path)
 
+    # ----------------------------
+    # 💾 Exportación y logs
+    # ----------------------------
     def export_results(self, output_path):
         """Copia el archivo generado a la carpeta compartida."""
-        export_dir = "/app/outputs/tests"
+        export_dir = os.path.join(
+            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "outputs", "tests"
+        )
         os.makedirs(export_dir, exist_ok=True)
-        os.system(f"cp {output_path} {export_dir}/generated_test.py")
-        print(f"📦 Archivo exportado a {export_dir}/generated_test.py")
+
+        dest_path = os.path.join(export_dir, "generated_test.py")
+        if os.path.abspath(output_path) != os.path.abspath(dest_path):
+            os.system(f"cp {output_path} {dest_path}")
+            print(f"📦 Archivo exportado a {dest_path}")
+        else:
+            print("⚙️  Archivo ya está en la ruta destino, no se copia.")
 
     def save_log(self, output_path):
         """Guarda log con resumen y actualiza README.md automáticamente."""
@@ -109,7 +137,9 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
             log.write(f"📅 Fin: {end_time}\n")
             log.write(f"🧩 App: {self.app_name or 'Todas las apps'}\n")
             log.write(f"🤖 Modelo: {self.config.OLLAMA_MODEL}\n")
-            log.write(f"⚙️ Parámetros: {'--fast ' if self.fast_mode else ''}{'--export ' if self.export else ''}{'--fallback' if self.fallback else ''}\n")
+            log.write(
+                f"⚙️ Parámetros: {'--fast ' if self.fast_mode else ''}{'--export ' if self.export else ''}{'--fallback' if self.fallback else ''}\n"
+            )
             log.write(f"📂 Archivos analizados: {len(self.reader.read_files())}\n")
             log.write(f"📄 Tests generados: {output_path}\n")
             log.write(f"⏱️ Duración total: {duration}\n")
@@ -120,7 +150,9 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
 
     def update_readme(self, end_time, duration):
         """Actualiza el README.md con la información de la última ejecución."""
-        readme_path = "/app/ai_agent/README.md"
+        readme_path = os.path.join(
+            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "README.md"
+        )
         info = f"""
 ### 🧾 Última ejecución registrada
 - 📅 Fecha: `{end_time.strftime("%Y-%m-%d %H:%M:%S")}`
@@ -129,7 +161,7 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
 - ⚙️ Parámetros: {'--fast' if self.fast_mode else ''} {'--export' if self.export else ''} {'--fallback' if self.fallback else ''}
 - ⏱️ Duración: `{duration}`
 """
-
+        os.makedirs(os.path.dirname(readme_path), exist_ok=True)
         if os.path.exists(readme_path):
             with open(readme_path, "r+", encoding="utf-8") as f:
                 content = f.read()
@@ -145,4 +177,4 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
         else:
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write("# 🤖 AI Agent Execution Log\n" + info)
-            print("📘 README.md creado automáticamente con la información de ejecución.")
+            print(f"📘 README.md creado automáticamente en {readme_path}")

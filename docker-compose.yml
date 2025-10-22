@@ -1,0 +1,144 @@
+name: smartquote
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartquote}
+      POSTGRES_USER: ${POSTGRES_USER:-erna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - smartquote_net
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: backend
+    env_file: .env
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_DB:-smartquote}
+      DATABASE_USER: ${POSTGRES_USER:-erna}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+    networks:
+      - smartquote_net
+    command: >
+      bash -lc "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    env_file: .env
+    depends_on:
+      - backend
+    ports:
+      - "5173:80" 
+    networks:
+      - smartquote_net
+
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # 1️⃣ Inicia el daemon en segundo plano
+        echo "🚀 Iniciando daemon de Ollama..."
+        ollama serve &
+        sleep 5
+
+        # 2️⃣ Espera hasta que el daemon esté disponible
+        until curl -s http://localhost:11434/api/tags > /dev/null; do
+          echo "⏳ Esperando que Ollama esté disponible..."
+          sleep 3
+        done
+
+        # 3️⃣ Descarga el modelo si no existe
+        if ! ollama list | grep -q "llama3:latest"; then
+          echo "🧠 Descargando modelo llama3:latest..."
+          ollama pull llama3:latest
+        else
+          echo "✅ Modelo llama3:latest ya disponible."
+        fi
+
+        # 4️⃣ Mantén el daemon corriendo en primer plano
+        echo "🟢 Servidor Ollama iniciado y listo."
+        wait
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - smartquote_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:11434/api/tags | grep -q 'llama3:latest'"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+
+  ai_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai_agent
+    container_name: ai_agent
+    env_file: .env
+    environment:
+      PROJECT_BASE_PATH: /workspace
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on:
+      - backend
+      - ollama
+    volumes:
+      - ./ai_agent:/workspace/ai_agent
+      - ./backend:/workspace/backend
+      - ./frontend:/workspace/frontend
+    working_dir: /workspace
+    networks:
+      - smartquote_net
+    command: >
+      sh -c "
+        echo '🕓 Esperando a Ollama...';
+        until curl -s http://ollama:11434/api/tags > /dev/null; do
+          sleep 3;
+          echo '🔁 Aún no responde...';
+        done;
+        echo '✅ Ollama listo, iniciando agente...';
+        python ai_agent/run_agent.py --fallback
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | grep llama3 || ollama pull llama3"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+
+
+networks:
+  smartquote_net:
+
+volumes:
+  pgdata:
+  media_data:
+  static_data:
+  ollama_data:

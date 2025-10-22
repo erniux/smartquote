@@ -88,49 +88,33 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 ---
 
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
 ### 🧾 Última ejecución registrada
-
-- 📅 **Fecha:** `2025-10-21 01:54:19`  
-- 🤖 **Modelo usado:** `deepseek-r1:14b`  
-- 🧩 **App procesada:** `sales`  
-- ⚙️ **Parámetros:** `--export`  
-- ⏱️ **Duración:** `0:00:00.071697`
-
----
-
-## 🛠️ Problemas resueltos
-
-❌ Conexión rechazada entre contenedor y Ollama → **Solución:** usar `host.docker.internal`  
-❌ Modelos que requerían >30 GB RAM → **Cambio:** `deepseek-r1:14b`  
-❌ Errores por versiones de LangChain → **Compatibilidad ajustada**  
-⚙️ Docker sin `curl` → agregado en el Dockerfile  
-⚡ Mejora en rendimiento, logs y creación automática de documentación
-
----
-
-## 💡 Ejemplos de ejecución
-
-Procesar solo una app:
-```bash
-python -m ai_agent.run_agent --app sales --export
-```
-
-Modo rápido y exportar:
-```bash
-python -m ai_agent.run_agent --app sales --fast --export
-```
-
-Procesar todo el proyecto y generar logs con README autoactualizado:
-```bash
-python -m ai_agent.run_agent --export --fallback
-```
-
----
-
-## ✨ Autor
-
-**Erna Tercero Rodríguez**  
-🧩 QA Engineer & Automation Developer  
-📍 Querétaro, México  
-📧 [eterceror@hotmail.com](mailto:eterceror@hotmail.com)  
-🌐 [GitHub: erniux](https://github.com/erniux)
+- 📅 Fecha: `2025-10-22 01:38:41`
+- 🤖 Modelo usado: `llama3:latest`
+- 🧩 App procesada: `Todas las apps`
+- ⚙️ Parámetros:  --export --fallback
+- ⏱️ Duración: `0:00:03.077468`

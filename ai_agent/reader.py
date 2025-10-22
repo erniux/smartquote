@@ -10,7 +10,7 @@ class CodeReader:
 
     def __init__(self, app_name=None):
         self.app_name = app_name
-        self.base_path = "/app"
+        self.base_path = os.getenv("PROJECT_BASE_PATH", os.getcwd())
         self.extensions = [".py"]
         self.key_files = ["models.py", "views.py", "serializers.py", "utils.py"]
 
