@@ -112,9 +112,12 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
+
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-22 01:38:41`
+- 📅 Fecha: `2025-10-24 01:27:05`
 - 🤖 Modelo usado: `llama3:latest`
 - 🧩 App procesada: `Todas las apps`
 - ⚙️ Parámetros:  --export --fallback
-- ⏱️ Duración: `0:00:03.077468`
+- ⏱️ Duración: `0:00:06.362876`

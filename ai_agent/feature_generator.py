@@ -1,123 +1,240 @@
 import os
 import re
+import json
+import time
+import httpx
+import ollama
 from datetime import datetime
-from ai_agent.config import Config
 from ai_agent.reader import CodeReader
+from ai_agent.config import Config
 
 
-class FeatureGenerator:
-    """Convierte pruebas Python en archivos .feature (BDD / Gherkin)."""
+class ApiTestGenerator:
+    """Agente para generar pruebas automatizadas basadas en código fuente y modelos Ollama."""
 
-    def __init__(self, app_name=None):
+    def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False):
         self.config = Config()
         self.reader = CodeReader(app_name=app_name)
+        self.fast_mode = fast_mode
         self.app_name = app_name
-        self.tests_dir = "/app/outputs/tests"
-        self.features_dir = "/app/outputs/features"
-        os.makedirs(self.features_dir, exist_ok=True)
+        self.export = export
+        self.fallback = fallback
+        self.start_time = datetime.now()
+        self.output_dir = "/app/outputs/tests"
+        self.logs_dir = "/app/outputs/logs"
+
+        print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
+        print(f"🧩 Conectando cliente Ollama en {self.config.OLLAMA_BASE_URL} ...")
+
+        # Crear cliente oficial de Ollama
+        self.client = ollama.Client(host=self.config.OLLAMA_BASE_URL.strip())
+
+        # Verificar que Ollama esté disponible
+        self.wait_for_ollama(self.config.OLLAMA_BASE_URL)
+        print(f"✅ Cliente Ollama inicializado correctamente en {self.config.OLLAMA_BASE_URL}")
 
     # ----------------------------
-    # 📘 Método principal
+    # 🔍 Verificación de disponibilidad
     # ----------------------------
-    def generate_feature_files(self):
-        """Convierte los tests generados en features BDD."""
-        test_file_path = os.path.join(self.tests_dir, "generated_test.py")
-
-        if not os.path.exists(test_file_path):
-            print(f"⚠️ No se encontró {test_file_path}. Ejecuta el generador de tests primero.")
-            return
-
-        print(f"📘 Leyendo archivo de tests: {test_file_path}")
-        with open(test_file_path, "r", encoding="utf-8") as f:
-            test_content = f.read()
-
-        # Buscar todas las funciones test_*
-        test_functions = re.findall(r"def (test_[\w_]+)\((.*?)\):([\s\S]*?)(?=\ndef|\Z)", test_content)
-
-        if not test_functions:
-            print("⚠️ No se encontraron funciones de prueba en el archivo.")
-            return
-
-        feature_output_path = os.path.join(self.features_dir, "generated_feature.feature")
-        print(f"🧩 Generando archivo .feature en: {feature_output_path}")
-
-        feature_content = self._convert_to_gherkin(test_functions)
-
-        with open(feature_output_path, "w", encoding="utf-8") as f:
-            f.write(feature_content)
-
-        print(f"✅ Archivo .feature generado correctamente en {feature_output_path}")
-        self.update_readme(feature_output_path)
+    def wait_for_ollama(self, url, timeout=60):
+        """Verifica que Ollama esté corriendo antes de iniciar."""
+        print(f"🕓 Verificando conexión con Ollama en {url} ...")
+        start = time.time()
+        while time.time() - start < timeout:
+            try:
+                response = httpx.get(f"{url}/api/tags", timeout=5)
+                if response.status_code == 200:
+                    print("✅ Ollama está disponible y responde correctamente.")
+                    return True
+            except Exception:
+                time.sleep(3)
+        raise ConnectionError("❌ Ollama no respondió en el tiempo esperado.")
 
     # ----------------------------
-    # 🧠 Conversión a Gherkin
+    # ⚙️  Generador principal de pruebas
     # ----------------------------
-    def _convert_to_gherkin(self, test_functions):
-        """Convierte funciones de prueba en texto BDD Gherkin."""
-        lines = [
-            "Feature: Automated tests generated from AI Agent",
-            "",
-            "  # Archivo generado automáticamente a partir de tests Python",
-        ]
+    def generate_tests(self):
+        """Genera los tests automáticamente a partir del código fuente."""
+        os.makedirs(self.output_dir, exist_ok=True)
+        os.makedirs(self.logs_dir, exist_ok=True)
 
-        for func_name, params, body in test_functions:
-            scenario_name = func_name.replace("_", " ").capitalize()
-            lines.append(f"\n  Scenario: {scenario_name}")
+        files = self.reader.read_files()
+        total_files = len(files)
+        print(f"📂 Se leerán {total_files} archivos para análisis...")
 
-            # Detectar pasos básicos
-            if "get(" in body:
-                lines.append("    Given the API endpoint is available")
-                lines.append("    When I send a GET request")
-                lines.append("    Then I should receive a 200 OK response")
+        output_path = os.path.join(self.output_dir, "generated_test.py")
+        all_tests = []
 
-            elif "post(" in body:
-                lines.append("    Given a valid payload")
-                lines.append("    When I send a POST request")
-                if "201" in body:
-                    lines.append("    Then I should receive a 201 Created response")
-                else:
-                    lines.append("    Then I should receive a successful response")
+        for i, (path, content) in enumerate(files.items(), start=1):
+            print(f"🧩 Procesando bloque {i}/{total_files} ({len(content)} chars)")
+            try:
+                prompt = f"""
+Analiza el siguiente archivo y genera pruebas unitarias o de integración con pytest, 
+según corresponda. Sé explícito en los nombres de funciones y casos de prueba.
 
-            elif "put(" in body or "patch(" in body:
-                lines.append("    Given an existing resource")
-                lines.append("    When I send an update request")
-                lines.append("    Then the resource should be updated")
+### Archivo: {path}
+{content}
+"""
+                print(f"🔄 Enviando prompt a Ollama ({self.config.OLLAMA_BASE_URL})...")
+                response = self.client.chat(
+                    model=self.config.OLLAMA_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                )
 
-            elif "delete(" in body:
-                lines.append("    Given an existing resource")
-                lines.append("    When I send a DELETE request")
-                lines.append("    Then the resource should be removed")
+                answer = response["message"]["content"]
+                print(f"💬 Respuesta de Ollama: {answer[:120]}...")
 
-            else:
-                lines.append("    Given the system is ready")
-                lines.append("    When I execute the test logic")
-                lines.append("    Then I should get the expected result")
+                all_tests.append(f"# ==== Tests para {os.path.basename(path)} ====\n{answer}\n")
+                print(f"✅ Bloque {i} procesado correctamente.")
+            except Exception as e:
+                print(f"⚠️ Error procesando bloque {i}: {e}")
 
-        return "\n".join(lines)
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(all_tests))
+
+        print(f"✅ Tests generados en: {output_path}")
+        self.save_log(output_path)
+
+        if self.export:
+            self.export_results(output_path)
 
     # ----------------------------
-    # 🪶 Actualiza el README del agente
+    # 💾 Exportación y logs
     # ----------------------------
-    def update_readme(self, feature_path):
-        """Actualiza el README.md con información sobre la última generación."""
+    def export_results(self, output_path):
+        """Copia el archivo generado a la carpeta compartida."""
+        export_dir = os.path.join(
+            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "outputs", "tests"
+        )
+        os.makedirs(export_dir, exist_ok=True)
+
+        dest_path = os.path.join(export_dir, "generated_test.py")
+        if os.path.abspath(output_path) != os.path.abspath(dest_path):
+            os.system(f"cp {output_path} {dest_path}")
+            print(f"📦 Archivo exportado a {dest_path}")
+        else:
+            print("⚙️  Archivo ya está en la ruta destino, no se copia.")
+
+    def save_log(self, output_path):
+        """Guarda log con resumen y actualiza README.md automáticamente."""
+        end_time = datetime.now()
+        duration = end_time - self.start_time
+        log_name = f"ai_agent_report_{end_time.strftime('%Y%m%d_%H%M%S')}.txt"
+        log_path = os.path.join(self.logs_dir, log_name)
+
+        with open(log_path, "w", encoding="utf-8") as log:
+            log.write("🧠 AI AGENT EXECUTION REPORT\n")
+            log.write("=" * 40 + "\n")
+            log.write(f"📅 Inicio: {self.start_time}\n")
+            log.write(f"📅 Fin: {end_time}\n")
+            log.write(f"🧩 App: {self.app_name or 'Todas las apps'}\n")
+            log.write(f"🤖 Modelo: {self.config.OLLAMA_MODEL}\n")
+            log.write(
+                f"⚙️ Parámetros: {'--fast ' if self.fast_mode else ''}{'--export ' if self.export else ''}{'--fallback' if self.fallback else ''}\n"
+            )
+            log.write(f"📂 Archivos analizados: {len(self.reader.read_files())}\n")
+            log.write(f"📄 Tests generados: {output_path}\n")
+            log.write(f"⏱️ Duración total: {duration}\n")
+            log.write("=" * 40 + "\n")
+
+        print(f"🪶 Log guardado en {log_path}")
+        self.update_readme(end_time, duration)
+
+    def update_readme(self, end_time, duration):
+        """Actualiza el README.md con la información de la última ejecución."""
         readme_path = os.path.join(
             os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "README.md"
         )
-        os.makedirs(os.path.dirname(readme_path), exist_ok=True)
-
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         info = f"""
-### 🧾 Última generación de features
-- 📅 Fecha: `{timestamp}`
-- 📄 Archivo generado: `{feature_path}`
-- 🧩 Fuente: `/app/outputs/tests/generated_test.py`
+### 🧾 Última ejecución registrada
+- 📅 Fecha: `{end_time.strftime("%Y-%m-%d %H:%M:%S")}`
+- 🤖 Modelo usado: `{self.config.OLLAMA_MODEL}`
+- 🧩 App procesada: `{self.app_name or 'Todas las apps'}`
+- ⚙️ Parámetros: {'--fast' if self.fast_mode else ''} {'--export' if self.export else ''} {'--fallback' if self.fallback else ''}
+- ⏱️ Duración: `{duration}`
 """
+        os.makedirs(os.path.dirname(readme_path), exist_ok=True)
+        if os.path.exists(readme_path):
+            with open(readme_path, "r+", encoding="utf-8") as f:
+                content = f.read()
+                if "### 🧾 Última ejecución registrada" in content:
+                    start = content.find("### 🧾 Última ejecución registrada")
+                    content = content[:start] + info
+                else:
+                    content += "\n" + info
+                f.seek(0)
+                f.write(content)
+                f.truncate()
+            print("🪶 README.md actualizado automáticamente con la última ejecución.")
+        else:
+            with open(readme_path, "w", encoding="utf-8") as f:
+                f.write("# 🤖 AI Agent Execution Log\n" + info)
+            print(f"📘 README.md creado automáticamente en {readme_path}")
 
+
+class FeatureGenerator:
+    """
+    Genera archivos .feature (BDD) a partir de tests generados por ApiTestGenerator.
+    """
+
+    def __init__(self, source_path=None, output_dir="outputs/features"):
+        self.source_path = source_path or "outputs/tests/generated_test.py"
+        self.output_dir = output_dir
+        os.makedirs(self.output_dir, exist_ok=True)
+
+    def generate_feature_files(self):
+        """Convierte los tests de Python en archivos .feature."""
+        print(f"📘 Leyendo archivo de tests: {self.source_path}")
+        if not os.path.exists(self.source_path):
+            raise FileNotFoundError(f"No se encontró el archivo de tests: {self.source_path}")
+
+        with open(self.source_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Divide el contenido en secciones por archivo
+        sections = re.split(r"# ==== Tests para (.+?) ====", content)
+        sections = [s.strip() for s in sections if s.strip()]
+
+        feature_files = []
+        for i in range(0, len(sections), 2):
+            filename = sections[i].replace(".py", "").replace("/", "_")
+            body = sections[i + 1] if i + 1 < len(sections) else ""
+            feature_content = self._convert_to_feature(filename, body)
+            feature_path = os.path.join(self.output_dir, f"{filename}.feature")
+
+            with open(feature_path, "w", encoding="utf-8") as out:
+                out.write(feature_content)
+            feature_files.append(feature_path)
+            print(f"✅ Archivo .feature generado: {feature_path}")
+
+        self._update_readme(feature_files)
+
+    def _convert_to_feature(self, name, body):
+        """Convierte código de test en formato Gherkin básico."""
+        scenarios = re.findall(r"def test_(\w+)", body)
+        feature = [f"Feature: {name.replace('_', ' ').title()}"]
+
+        for scenario in scenarios:
+            feature.append(f"\n  Scenario: {scenario.replace('_', ' ').title()}")
+            feature.append(f"    Given el sistema está listo")
+            feature.append(f"    When se ejecuta el test {scenario}")
+            feature.append(f"    Then el resultado es exitoso")
+
+        return "\n".join(feature)
+
+    def _update_readme(self, feature_files):
+        """Actualiza el README.md con la fecha de generación de features."""
+        readme_path = os.path.join("/workspace/ai_agent", "README.md")
+        info = f"""
+### 🧩 Última generación de archivos .feature
+- 📅 Fecha: `{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}`
+- 📂 Archivos generados:
+{os.linesep.join([f'  - {os.path.basename(f)}' for f in feature_files])}
+"""
         if os.path.exists(readme_path):
             with open(readme_path, "a", encoding="utf-8") as f:
                 f.write("\n" + info)
         else:
             with open(readme_path, "w", encoding="utf-8") as f:
-                f.write("# 🤖 AI Agent Feature Generator\n" + info)
-
-        print(f"🪶 README.md actualizado con la información de la última generación de features.")
+                f.write("# 🤖 AI Agent Execution Log\n" + info)
+        print("🪶 README.md actualizado con la última generación de features.")

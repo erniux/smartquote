@@ -1,6 +1,6 @@
 import argparse
 from ai_agent.test_generator import ApiTestGenerator
-from feature_generator import FeatureGenerator
+from ai_agent.feature_generator import FeatureGenerator
 
 
 def main():
