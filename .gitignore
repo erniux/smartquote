@@ -79,6 +79,7 @@ nosetests.xml
 coverage.xml
 *.pytest_cache/
 test_results/
+notas.txt
 
 # ---- PDF / Files ----
 *.pdf
@@ -92,3 +93,4 @@ test_results/
 *.bak
 *.orig
 *.rej
+

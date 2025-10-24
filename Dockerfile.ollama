@@ -1,0 +1,13 @@
+# Usa la imagen base oficial de Ollama
+FROM ollama/ollama:latest
+
+# Instala curl (necesario para esperar y validar disponibilidad del daemon)
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copia tu script de inicialización al contenedor
+COPY docker/scripts/init_ollama.sh /init_ollama.sh
+RUN chmod +x /init_ollama.sh
+
+# Define el entrypoint personalizado
+ENTRYPOINT ["/bin/sh", "/init_ollama.sh"]
+

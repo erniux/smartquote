@@ -69,12 +69,17 @@ class ApiTestGenerator:
             print(f"🧩 Procesando bloque {i}/{total_files} ({len(content)} chars)")
             try:
                 prompt = f"""
-Analiza el siguiente archivo y genera pruebas unitarias o de integración con pytest, 
-según corresponda. Sé explícito en los nombres de funciones y casos de prueba.
+Analiza el siguiente archivo y genera pruebas unitarias o de integración usando pytest.
+No incluyas bloques de código Markdown (no uses ```python ni ```).
+Usa comentarios normales de Python (con #) para explicar brevemente cada prueba o sección.
+No agregues explicaciones fuera del código, solo comentarios dentro del mismo.
+Mantén un formato limpio, profesional y compatible con pytest.
 
-### Archivo: {path}
+Archivo analizado: {os.path.basename(path)}
+
 {content}
 """
+
                 print(f"🔄 Enviando prompt a Ollama ({self.config.OLLAMA_BASE_URL})...")
                 response = self.client.chat(
                     model=self.config.OLLAMA_MODEL,
@@ -183,31 +188,55 @@ class FeatureGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def generate_feature_files(self):
-        """Convierte los tests de Python en archivos .feature."""
-        print(f"📘 Leyendo archivo de tests: {self.source_path}")
-        if not os.path.exists(self.source_path):
-            raise FileNotFoundError(f"No se encontró el archivo de tests: {self.source_path}")
+        """Convierte los tests de Python en archivos .feature (soporta carpeta o archivo)."""
+        print(f"📘 Leyendo fuente: {self.source_path}")
 
-        with open(self.source_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        files_to_process = []
 
-        # Divide el contenido en secciones por archivo
-        sections = re.split(r"# ==== Tests para (.+?) ====", content)
-        sections = [s.strip() for s in sections if s.strip()]
+        # Si es carpeta → recorrer todo
+        if os.path.isdir(self.source_path):
+            for root, _, filenames in os.walk(self.source_path):
+                for filename in filenames:
+                    if filename.endswith(".py"):
+                        files_to_process.append(os.path.join(root, filename))
+            if not files_to_process:
+                raise FileNotFoundError(f"No se encontraron archivos .py en {self.source_path}")
+        else:
+            # Si es archivo individual
+            files_to_process = [self.source_path]
 
         feature_files = []
-        for i in range(0, len(sections), 2):
-            filename = sections[i].replace(".py", "").replace("/", "_")
-            body = sections[i + 1] if i + 1 < len(sections) else ""
-            feature_content = self._convert_to_feature(filename, body)
-            feature_path = os.path.join(self.output_dir, f"{filename}.feature")
 
-            with open(feature_path, "w", encoding="utf-8") as out:
-                out.write(feature_content)
-            feature_files.append(feature_path)
-            print(f"✅ Archivo .feature generado: {feature_path}")
+        for file_path in files_to_process:
+            print(f"📖 Procesando archivo: {file_path}")
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            except Exception as e:
+                print(f"⚠️ No se pudo leer {file_path}: {e}")
+                continue
+
+            # Divide el contenido en secciones (solo si el archivo fue generado por ApiTestGenerator)
+            if "# ==== Tests para " in content:
+                sections = re.split(r"# ==== Tests para (.+?) ====", content)
+                sections = [s.strip() for s in sections if s.strip()]
+            else:
+                # Si no tiene delimitadores, se convierte todo el archivo en un solo feature
+                sections = ["tests_generales", content]
+
+            for i in range(0, len(sections), 2):
+                filename = sections[i].replace(".py", "").replace("/", "_")
+                body = sections[i + 1] if i + 1 < len(sections) else ""
+                feature_content = self._convert_to_feature(filename, body)
+                feature_path = os.path.join(self.output_dir, f"{filename}.feature")
+
+                with open(feature_path, "w", encoding="utf-8") as out:
+                    out.write(feature_content)
+                feature_files.append(feature_path)
+                print(f"✅ Archivo .feature generado: {feature_path}")
 
         self._update_readme(feature_files)
+
 
     def _convert_to_feature(self, name, body):
         """Convierte código de test en formato Gherkin básico."""

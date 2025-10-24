@@ -68,12 +68,21 @@ class ApiTestGenerator:
             print(f"🧩 Procesando bloque {i}/{total_files} ({len(content)} chars)")
             try:
                 prompt = f"""
-Analiza el siguiente archivo y genera pruebas unitarias o de integración con pytest, 
-según corresponda. Sé explícito en los nombres de funciones y casos de prueba.
+Analiza el siguiente archivo de código fuente y genera:
 
-### Archivo: {path}
+1. Pruebas unitarias o de integración usando pytest, con formato profesional.
+2. Solo usa comentarios con `#` dentro del código (nunca ``` ni ```python).
+3. No agregues explicaciones externas ni texto descriptivo fuera del código.
+4. Al final del archivo, incluye un bloque en formato Gherkin (Feature / Scenario)
+   que describa los mismos casos de prueba de forma resumida.
+
+El código debe ser funcional y limpio, sin imports innecesarios.
+
+Archivo analizado: {os.path.basename(path)}
+
 {content}
 """
+
                 print(f"🔄 Enviando prompt a Ollama ({self.config.OLLAMA_BASE_URL})...")
                 print(f"🔄 Enviando prompt ({len(prompt)} chars)...")
                 try:
@@ -178,3 +187,28 @@ según corresponda. Sé explícito en los nombres de funciones y casos de prueba
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write("# 🤖 AI Agent Execution Log\n" + info)
             print(f"📘 README.md creado automáticamente en {readme_path}")
+
+
+    def _convert_to_feature(self, name, body):
+        """
+        Convierte código de test en formato Gherkin básico.
+        Si el cuerpo ya contiene un bloque 'Feature:', lo conserva tal cual.
+        """
+        # Si ya tiene un bloque Gherkin generado por Ollama, lo reutilizamos
+        if "Feature:" in body:
+            feature_match = re.search(r"(Feature:.*)", body, re.DOTALL)
+            if feature_match:
+                return feature_match.group(1)
+
+        # Caso contrario: generar automáticamente los escenarios desde las funciones test_
+        scenarios = re.findall(r"def test_(\w+)", body)
+        feature = [f"Feature: {name.replace('_', ' ').title()}"]
+
+        for scenario in scenarios:
+            feature.append(f"\n  Scenario: {scenario.replace('_', ' ').title()}")
+            feature.append(f"    Given el sistema está listo")
+            feature.append(f"    When se ejecuta el test {scenario}")
+            feature.append(f"    Then el resultado es exitoso")
+
+        return "\n".join(feature)
+

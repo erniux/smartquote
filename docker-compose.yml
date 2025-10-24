@@ -56,36 +56,11 @@ services:
     networks:
       - smartquote_net
 
-
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
     container_name: ollama
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        # 1️⃣ Inicia el daemon en segundo plano
-        echo "🚀 Iniciando daemon de Ollama..."
-        ollama serve &
-        sleep 5
-
-        # 2️⃣ Espera hasta que el daemon esté disponible
-        until curl -s http://localhost:11434/api/tags > /dev/null; do
-          echo "⏳ Esperando que Ollama esté disponible..."
-          sleep 3
-        done
-
-        # 3️⃣ Descarga el modelo si no existe
-        if ! ollama list | grep -q "llama3:latest"; then
-          echo "🧠 Descargando modelo llama3:latest..."
-          ollama pull llama3:latest
-        else
-          echo "✅ Modelo llama3:latest ya disponible."
-        fi
-
-        # 4️⃣ Mantén el daemon corriendo en primer plano
-        echo "🟢 Servidor Ollama iniciado y listo."
-        wait
     ports:
       - "11434:11434"
     volumes:
@@ -93,7 +68,7 @@ services:
     networks:
       - smartquote_net
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:11434/api/tags | grep -q 'llama3:latest'"]
+      test: ["CMD-SHELL", "curl -s http://localhost:11434/api/tags | grep -q 'llama3'"]
       interval: 60s
       timeout: 10s
       retries: 5
