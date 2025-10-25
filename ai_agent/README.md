@@ -118,111 +118,17 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-24 03:35:31`
+- 📅 Fecha: `2025-10-24 17:07:16`
 - 🤖 Modelo usado: `llama3:latest`
 - 🧩 App procesada: `Todas las apps`
 - ⚙️ Parámetros:  --export --fallback
-- ⏱️ Duración: `0:00:02.905000`
+- ⏱️ Duración: `1:02:25.750344`
 
 
 ### 🧩 Última generación de archivos .feature
-- 📅 Fecha: `2025-10-24 03:35:35`
+- 📅 Fecha: `2025-10-24 17:07:20`
 - 📂 Archivos generados:
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
-  - tests_generales.feature
+

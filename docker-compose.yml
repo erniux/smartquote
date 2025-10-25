@@ -48,11 +48,16 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     container_name: frontend
-    env_file: .env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # evita conflictos con node_modules local
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
     depends_on:
       - backend
-    ports:
-      - "5173:80" 
     networks:
       - smartquote_net
 

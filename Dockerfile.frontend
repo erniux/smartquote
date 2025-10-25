@@ -1,28 +1,32 @@
-# ---------- FASE 1: Build del frontend ----------
-FROM node:20-slim AS build
+# ---------- FASE: Desarrollo con Vite ----------
+FROM node:20-slim
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copiar los archivos de dependencias
+# Copiar dependencias primero (cache-friendly)
 COPY frontend/package*.json ./
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
-# 🔧 Eliminar lockfile (fuente del conflicto) e instalar limpio
-RUN rm -f package-lock.json && npm install --legacy-peer-deps --no-audit --no-fund
-
-# Copiar el resto del código fuente
+# Copiar el código fuente
 COPY frontend ./
 
-# 🔧 Alinear la versión de esbuild y reinstalar su binario
-RUN npm install esbuild@latest && npm rebuild esbuild
+# Exponer el puerto Vite
+EXPOSE 5173
 
-# Compilar la app (modo producción)
-RUN npm run build
+# Ejecutar Vite en modo desarrollo
+CMD ["npm", "run", "dev"]
 
-# ---------- FASE 2: Servidor Nginx ----------
-FROM nginx:1.25-alpine
 
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# ---------- FASE: Build de producción ----------
+# FROM node:20-slim AS build
+# WORKDIR /usr/src/app
+# COPY frontend/package*.json ./
+# RUN npm install --legacy-peer-deps --no-audit --no-fund
+# COPY frontend ./
+# RUN npm run build
+#
+# ---------- FASE: Servidor Nginx ----------
+# FROM nginx:1.25-alpine
+# COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+# EXPOSE 80
+# CMD ["nginx", "-g", "daemon off;"]

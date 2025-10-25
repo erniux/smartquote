@@ -187,6 +187,7 @@ class FeatureGenerator:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
+
     def generate_feature_files(self):
         """Convierte los tests de Python en archivos .feature (soporta carpeta o archivo)."""
         print(f"📘 Leyendo fuente: {self.source_path}")
@@ -230,10 +231,16 @@ class FeatureGenerator:
                 feature_content = self._convert_to_feature(filename, body)
                 feature_path = os.path.join(self.output_dir, f"{filename}.feature")
 
-                with open(feature_path, "w", encoding="utf-8") as out:
-                    out.write(feature_content)
-                feature_files.append(feature_path)
-                print(f"✅ Archivo .feature generado: {feature_path}")
+                # En lugar de un solo archivo, genera uno por Feature
+                self._save_feature_files(feature_content)
+
+                #
+                #    with open(feature_path, "w", encoding="utf-8") as out:
+                #
+                #        out.write(feature_content)
+                #
+                #    feature_files.append(feature_path)
+                #print(f"✅ Archivo .feature generado: {feature_path}")
 
         self._update_readme(feature_files)
 
@@ -250,6 +257,40 @@ class FeatureGenerator:
             feature.append(f"    Then el resultado es exitoso")
 
         return "\n".join(feature)
+
+    def _save_feature_files(self, combined_text):
+        """
+        Divide el archivo generado en múltiples .feature,
+        uno por cada bloque que comience con 'Feature:'.
+        """
+        # Buscar cada bloque que empieza con 'Feature:'
+        pattern = r'(Feature:[\s\S]*?)(?=\nFeature:|\Z)'
+        matches = re.findall(pattern, combined_text)
+
+        if not matches:
+            print("⚠️ No se encontraron bloques Feature: en el archivo.")
+            return
+
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        for match in matches:
+            # Tomar el nombre de la feature (primera línea)
+            first_line = match.splitlines()[0]
+            feature_name = (
+                first_line.replace("Feature:", "").strip()
+                .lower()
+                .replace(" ", "_")
+                .replace("/", "_")
+            )
+
+            # Crear archivo por feature
+            file_path = os.path.join(self.output_dir, f"{feature_name}.feature")
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(match.strip() + "\n")
+
+            print(f"✅ Archivo .feature generado: {file_path}")
+
 
     def _update_readme(self, feature_files):
         """Actualiza el README.md con la fecha de generación de features."""
