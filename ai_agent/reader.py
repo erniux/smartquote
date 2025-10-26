@@ -22,7 +22,18 @@ class CodeReader:
         print("📘 Leyendo estructura de código...")
 
         if self.app_name:
-            app_path = os.path.join(self.base_path, self.app_name)
+            # Buscar tanto en la raíz como dentro de "backend"
+            direct_path = os.path.join(self.base_path, self.app_name)
+            backend_path = os.path.join(self.base_path, "backend", self.app_name)
+
+            if os.path.exists(direct_path):
+                app_path = direct_path
+            elif os.path.exists(backend_path):
+                app_path = backend_path
+            else:
+                print(f"⚠️ La app '{self.app_name}' no existe en {self.base_path} ni en {backend_path}. Se usará fallback.")
+                return self._fallback_all_apps()
+
             if not os.path.exists(app_path):
                 print(f"⚠️ La app '{self.app_name}' no existe en {self.base_path}. Se usará fallback.")
                 return self._fallback_all_apps()

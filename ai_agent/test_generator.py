@@ -40,19 +40,37 @@ class ApiTestGenerator:
     # ----------------------------
     # 🔍 Verificación de disponibilidad
     # ----------------------------
-    def wait_for_ollama(self, url, timeout=60):
-        """Verifica que Ollama esté corriendo antes de iniciar."""
-        print(f"🕓 Verificando conexión con Ollama en {url} ...")
+    def wait_for_ollama(self, url, timeout=300):
+        """Verifica que Ollama esté corriendo y que el modelo requerido esté disponible."""
+        model_name = self.config.OLLAMA_MODEL
+        print(f"🕓 Esperando a Ollama y al modelo '{model_name}' ...")
+
         start = time.time()
         while time.time() - start < timeout:
             try:
-                response = httpx.get(f"{url}/api/tags", timeout=5)
+                # Verificar que el servicio Ollama esté en línea
+                response = httpx.get(f"{url}/api/tags", timeout=10)
                 if response.status_code == 200:
-                    print("✅ Ollama está disponible y responde correctamente.")
-                    return True
-            except Exception:
-                time.sleep(3)
-        raise ConnectionError("❌ Ollama no respondió en el tiempo esperado.")
+                    # Verificar si el modelo ya está disponible
+                    tags = response.json().get("models", [])
+                    model_names = [t.get("name", "") for t in tags]
+                    if any(model_name in name for name in model_names):
+                        print(f"✅ Ollama y el modelo '{model_name}' están listos.")
+                        return True
+                    else:
+                        print(f"🔁 Modelo '{model_name}' aún no descargado, esperando...")
+                else:
+                    print(f"⚠️ Ollama responde con código {response.status_code}, reintentando...")
+            except Exception as e:
+                print(f"⏳ Aún no responde ({str(e)}), reintentando...")
+
+            time.sleep(5)
+
+        raise ConnectionError(
+            f"❌ Tiempo agotado esperando a que Ollama y el modelo '{model_name}' estén listos."
+        )
+
+        
 
     # ----------------------------
     # ⚙️  Generador principal de pruebas
@@ -61,7 +79,7 @@ class ApiTestGenerator:
         """Genera los tests automáticamente a partir del código fuente."""
         os.makedirs(self.output_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
-
+        
         files = self.reader.read_files()
         total_files = len(files)
         print(f"📂 Se leerán {total_files} archivos para análisis...")
@@ -88,14 +106,17 @@ class ApiTestGenerator:
 
             prompt = f"""
         Analiza el siguiente conjunto de archivos pertenecientes al módulo **{folder}**
-        (models, serializers y views) y genera un **solo archivo .feature** en formato Gherkin.
+        (models, serializers y views) y genera un *un archivo .feature por cada Feature identificado** en formato Gherkin e idioma ingles.
 
         Reglas:
         - No incluyas texto explicativo ni análisis, solo contenido Gherkin válido.
         - Cada funcionalidad principal debe representarse como un `Feature`.
         - Usa `Scenario` claros con pasos Given/When/Then.
         - Enfócate en los flujos funcionales reales (creación, edición, validaciones, errores, etc.).
-        - No uses ``` ni Markdown.
+        - No uses ``` ni Markdown utiliza comentarios con # al principios
+        - Responde en Inglés.
+        -No anotes el lenguaje del archivo y retira los markdowns, debe ser un archivo .feature puro en Gherkin o cucucmber
+        
 
         {combined_content}
         """

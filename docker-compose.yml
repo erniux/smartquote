@@ -103,7 +103,7 @@ services:
           echo '🔁 Aún no responde...';
         done;
         echo '✅ Ollama listo, iniciando agente...';
-        python ai_agent/run_agent.py --fallback
+        python ai_agent/run_agent.py --app core --export
       "
     healthcheck:
       test: ["CMD-SHELL", "ollama list | grep mistral || ollama pull mistral"]

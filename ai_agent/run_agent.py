@@ -1,6 +1,6 @@
 import argparse
 from ai_agent.test_generator import ApiTestGenerator
-from ai_agent.feature_generator import FeatureGenerator
+#from ai_agent.feature_generator import FeatureGenerator
 
 
 def main():
@@ -48,29 +48,6 @@ def main():
 
 
 if __name__ == "__main__":
-    print("\n🧠 Iniciando el agente con modo debug...\n")
-
-    try:
-        generator = ApiTestGenerator(
-            fast_mode=False,
-            app_name=None,
-            export=True,
-            fallback=True,
-        )
-        generator.generate_tests()
-
-        # 🔧 Generar features desde el código real del backend
-        feature_gen = FeatureGenerator(
-            source_path="/workspace/backend",
-            output_dir="/workspace/ai_agent/features"
-        )
-        #feature_gen.generate_feature_files()
-
-    except KeyboardInterrupt:
-        print("\n⛔ Ejecución interrumpida por el usuario.")
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"\n❌ Error crítico en la ejecución del agente: {e}")
-
+    main()
+     
 

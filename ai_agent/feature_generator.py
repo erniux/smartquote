@@ -20,7 +20,7 @@ class ApiTestGenerator:
         self.export = export
         self.fallback = fallback
         self.start_time = datetime.now()
-        self.output_dir = "/app/outputs/features"
+        self.output_dir = "/app/outputs/tests"
         self.logs_dir = "/app/outputs/logs"
 
         print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
@@ -182,8 +182,8 @@ class FeatureGenerator:
     Genera archivos .feature (BDD) a partir de tests generados por ApiTestGenerator.
     """
 
-    def __init__(self, source_path=None, output_dir="outputs/"):
-        self.source_path = source_path #or "outputs/features/generated_test.py"
+    def __init__(self, source_path=None, output_dir="outputs/features"):
+        self.source_path = source_path or "outputs/tests/generated_test.py"
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
