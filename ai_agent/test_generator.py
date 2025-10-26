@@ -112,28 +112,29 @@ class ApiTestGenerator:
                 f.write(answer.strip())
 
             print(f"✅ Archivo .feature generado: {feature_output_path}")
+            self.export_results(feature_output_path, f"{folder}.feature")
 
 
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(all_tests))
+        #with open(output_path, "w", encoding="utf-8") as f:
+        #    f.write("\n".join(all_tests))
 
         print(f"✅ Tests generados en: {output_path}")
         self.save_log(output_path)
 
-        if self.export:
-            self.export_results(output_path)
+        #if self.export:
+        #    self.export_results(output_path)
 
     # ----------------------------
     # 💾 Exportación y logs
     # ----------------------------
-    def export_results(self, output_path):
+    def export_results(self, output_path, file):
         """Copia el archivo generado a la carpeta compartida."""
         export_dir = os.path.join(
-            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "outputs", "tests"
+            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "outputs", "features"
         )
         os.makedirs(export_dir, exist_ok=True)
 
-        dest_path = os.path.join(export_dir, "generated_test.py")
+        dest_path = os.path.join(export_dir, file)
         if os.path.abspath(output_path) != os.path.abspath(dest_path):
             os.system(f"cp {output_path} {dest_path}")
             print(f"📦 Archivo exportado a {dest_path}")

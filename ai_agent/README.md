@@ -125,9 +125,10 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-26 02:57:23`
+- 📅 Fecha: `2025-10-26 04:38:22`
 - 🤖 Modelo usado: `mistral`
 - 🧩 App procesada: `Todas las apps`
 - ⚙️ Parámetros:  --export --fallback
-- ⏱️ Duración: `0:43:20.017794`
+- ⏱️ Duración: `0:45:49.322727`
