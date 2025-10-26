@@ -1,15 +1,32 @@
+# Imagen base ligera
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# Variables de entorno para evitar cacheo y buffering
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Requisitos del backend
-COPY backend/requirements.txt /app/requirements.txt 
+# Instala dependencias del sistema necesarias para psycopg2, Pillow, etc.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpq-dev gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiamos los requerimientos
+COPY backend/requirements.txt /app/requirements.txt
+
+# Instalamos dependencias Python
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Copiamos el backend (igual lo montamos como volumen para dev)
+# Copiamos el código del backend
 COPY backend /app
 
+# Copiamos los scripts (aseguramos que /scripts exista)
+COPY docker/scripts /scripts
+RUN chmod +x /scripts/init_backend.sh
+
+# Exponemos el puerto 8000
 EXPOSE 8000
+
+# Comando por defecto (se sobrescribe en docker-compose)
+CMD ["bash", "/scripts/init_backend.sh"]

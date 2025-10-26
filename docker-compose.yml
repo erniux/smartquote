@@ -4,9 +4,10 @@ services:
     image: postgres:16
     container_name: postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-smartquote}
-      POSTGRES_USER: ${POSTGRES_USER:-erna}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -14,6 +15,7 @@ services:
     ports:
       - "5432:5432"
 
+ 
   backend:
     build:
       context: .
@@ -27,18 +29,19 @@ services:
       DATABASE_USER: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-    command: ["/scripts/init_backend.sh"]  
+    command: ["/scripts/init_backend.sh"]
     depends_on:
       - postgres
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - media_data:/app/media
-      - static_data:/app/staticfiles
+      - ./media_data:/app/media
+      - ./static_data:/app/staticfiles
       - ./docker/scripts:/scripts
     networks:
       - smartquote_net
+
     
 
   frontend:
