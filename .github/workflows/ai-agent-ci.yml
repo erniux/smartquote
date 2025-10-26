@@ -1,7 +1,5 @@
 name: 🤖 AI Agent CI/CD
 
-name: AI Agent CI
-
 on:
   push:
     paths:

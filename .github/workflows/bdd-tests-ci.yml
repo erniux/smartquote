@@ -1,4 +1,4 @@
-name: BDD Tests (Coming Soon)
+name: 🧪 BDD Tests (Coming Soon)
 
 on:
   workflow_dispatch:  # Manual trigger
