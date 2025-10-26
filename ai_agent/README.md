@@ -134,9 +134,11 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-26 08:50:09`
+- 📅 Fecha: `2025-10-26 09:20:49`
 - 🤖 Modelo usado: `mistral`
 - 🧩 App procesada: `quotations`
-- ⚙️ Parámetros:   
-- ⏱️ Duración: `0:09:36.292527`
+- ⚙️ Parámetros:  --export 
+- ⏱️ Duración: `0:09:23.915095`

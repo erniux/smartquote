@@ -104,9 +104,6 @@ class ApiTestGenerator:
                 [f"# Archivo: {os.path.basename(p)}\n{c}" for p, c in file_list]
             )
 
-            # ---------------------------------------------------------
-            # 🧠 Prompt avanzado para generación de Features con Mistral
-            # ---------------------------------------------------------
             system_prompt = (
                 "You are a Senior QA Automation Engineer (SDET) certified in ISTQB Requirements Analysis. "
                 "You always output strict and valid Gherkin syntax without explanations or summaries. "
@@ -131,25 +128,24 @@ class ApiTestGenerator:
             {combined_content}
             """
 
-            print(f"🔄 Sending prompt to Ollama for module: {folder} ({len(prompt)} chars)...")
-
+            # Resto del bloque idéntico: envías el prompt y guardas un .feature
             response = self.client.chat(
                 model=self.config.OLLAMA_MODEL,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt},
-                ],
-            )
+                #messages=[{"role": "user", "content": prompt}],
+                 messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+                    ],
+                )
+            answer = response["message"]["content"]
 
-            answer = response["message"]["content"].strip()
-
-            # 💾 Guardar cada Feature en un archivo independiente
             feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
             with open(feature_output_path, "w", encoding="utf-8") as f:
                 f.write(answer)
+            
 
-            print(f"✅ Archivo .feature generado correctamente: {feature_output_path}")
-
+            print(f"✅ Archivo .feature generado: {feature_output_path}")
+            self.export_results(feature_output_path, f"{folder}.feature")
 
 
         #with open(output_path, "w", encoding="utf-8") as f:
