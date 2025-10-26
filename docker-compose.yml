@@ -22,11 +22,12 @@ services:
     env_file: .env
     environment:
       DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: ${POSTGRES_DB:-smartquote}
-      DATABASE_USER: ${POSTGRES_USER:-erna}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      DATABASE_PORT: ${POSTGRES_PORT}
+      DATABASE_NAME: ${POSTGRES_DB}
+      DATABASE_USER: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+    command: ["/scripts/init_backend.sh"]  
     depends_on:
       - postgres
     ports:
@@ -35,13 +36,10 @@ services:
       - ./backend:/app
       - media_data:/app/media
       - static_data:/app/staticfiles
+      - ./docker/scripts:/scripts
     networks:
       - smartquote_net
-    command: >
-      bash -lc "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000
-      "
+    
 
   frontend:
     build:
@@ -103,7 +101,7 @@ services:
           echo '🔁 Aún no responde...';
         done;
         echo '✅ Ollama listo, iniciando agente...';
-        python ai_agent/run_agent.py --app core --export
+        python ai_agent/run_agent.py --app=quotation 
       "
     healthcheck:
       test: ["CMD-SHELL", "ollama list | grep mistral || ollama pull mistral"]

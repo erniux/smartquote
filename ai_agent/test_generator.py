@@ -105,19 +105,16 @@ class ApiTestGenerator:
             )
 
             prompt = f"""
+        Asumiendo que eres un Ingeniero Analista de  Pruebas Sr. SDET con certificacion en Analisis de Requerimientos ISTQB**    
         Analiza el siguiente conjunto de archivos pertenecientes al módulo **{folder}**
-        (models, serializers y views) y genera un *un archivo .feature por cada Feature identificado** en formato Gherkin e idioma ingles.
-
-        Reglas:
-        - No incluyas texto explicativo ni análisis, solo contenido Gherkin válido.
-        - Cada funcionalidad principal debe representarse como un `Feature`.
-        - Usa `Scenario` claros con pasos Given/When/Then.
-        - Enfócate en los flujos funcionales reales (creación, edición, validaciones, errores, etc.).
-        - No uses ``` ni Markdown utiliza comentarios con # al principios
-        - Responde en Inglés.
-        -No anotes el lenguaje del archivo y retira los markdowns, debe ser un archivo .feature puro en Gherkin o cucucmber
+        (models, serializers y views) y genera un *un solo archivo .feature con todos los escenarios validos y escenarios de borde.*
+         El archivo debe cumplir con las siguientes reglas:
+        - Omite en tu respuesta comentarios y simbologia Markdown.
+        - Cada Archivo debe representarse como un `Feature`.
+        - Usa Escenarios claros con pasos Given/When/Then.
+        - Los enunciados deben estar escritos en Ingles.
+        - De tu respuesta elimina o evita repetir la pregunta, solo responde con el archivo genenrado.
         
-
         {combined_content}
         """
 
