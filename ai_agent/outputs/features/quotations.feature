@@ -1,20 +1,13 @@
-This is a Django REST Framework project for managing quotations in a company's sales process. The provided code includes the following:
+This code is related to a Django REST API for managing quotations and their associated sales. Here's a brief explanation of the components:
 
-1. Models for Quotation, QuotationItem, and QuotationExpense, which represent the quotation itself, items, and expenses respectively.
-2. Serializers for each model that handle the data validation and normalization.
-3. A viewset for Quotation that provides the CRUD operations (Create, Retrieve, Update, Delete) for managing quotations, along with custom actions like generating a sale, duplicating a quotation, and canceling a quotation.
-4. Custom permissions to control access to quotations based on the user's role in the company.
-5. Filters and search functionality for querying and filtering the quotations by various attributes such as date and status.
-6. Views handling API endpoints for different actions related to quotations, like generating a sale or duplicating a quotation.
+1. **models.py**: Contains the models for Quotation, QuotationItem, QuotationExpense, Sale, and User. These define the database schema for the application.
 
-To run this project, you'll need to have Django, Python, and the required packages installed on your system. You can create a new virtual environment, install dependencies using pip, and then run the migrations and start the development server:
+2. **serializers.py**: Defines the serialization classes for the models. Serialization is essential to convert Python objects into JSON format that can be sent over HTTP.
 
-```bash
-virtualenv -p python3 venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
+3. **views.py**: Contains viewsets that handle creating, retrieving, updating, and deleting quotations, sales, and related data. The QuotationViewSet has actions like generate_sale, duplicate, and cancel to perform specific operations on the quotations.
 
-After starting the development server, you can access the API documentation and test your endpoints using tools like Postman or Insomnia.
+4. **permissions.py**: Defines custom permissions for controlling access to certain resources. Here we have QuotationPermission that ensures only users with manager or admin role can perform certain actions on quotations.
+
+5. **filter_backends.py**: Contains the filter classes used in views to filter and sort querysets based on specified fields.
+
+6. **urls.py**: Defines the URL patterns for the application, mapping each view to a specific URL.

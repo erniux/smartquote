@@ -6,9 +6,6 @@ from core.models import Product
 from quotations.models import Quotation, QuotationItem, QuotationExpense
 
 
-# ============================================================
-# 🧱 QuotationItemSerializer (acepta payload plano)
-# ============================================================
 class QuotationItemSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(source="product.name", required=False, allow_blank=True)
@@ -22,18 +19,12 @@ class QuotationItemSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "metal_symbol", "price", "quantity", "unit_price"]
 
 
-# ============================================================
-# 🧾 QuotationExpenseSerializer
-# ============================================================
 class QuotationExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuotationExpense
         fields = ["id", "name", "description", "category", "quantity", "unit_cost", "total_cost"]
 
 
-# ============================================================
-# 💰 QuotationSerializer
-# ============================================================
 class QuotationSerializer(serializers.ModelSerializer):
     items = QuotationItemSerializer(many=True)
     expenses = QuotationExpenseSerializer(many=True, required=False)
@@ -56,9 +47,7 @@ class QuotationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = []
 
-    # ============================================================
-    # CREATE
-    # ============================================================
+  
     def create(self, validated_data):
         items_data = validated_data.pop("items", [])
         expenses_data = validated_data.pop("expenses", [])
@@ -103,9 +92,6 @@ class QuotationSerializer(serializers.ModelSerializer):
         return quotation
 
 
-    # ============================================================
-    # UPDATE (agregar, modificar y borrar items/expenses)
-    # ============================================================
     def update(self, instance, validated_data):
         items_data = self.initial_data.get("items", [])
         expenses_data = self.initial_data.get("expenses", [])

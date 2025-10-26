@@ -1,4 +1,3 @@
-```
 Feature: Invoices - View Invoice Details
   As a user, I want to view the details of an invoice so that I can verify its information.
 
@@ -59,4 +58,3 @@ Feature: Invoices - Update existing invoice
     Given I am on the invoice details page for an existing invoice
     When I update the invoice details with incorrect data (e.g., invalid tax percentage) and submit the form
     Then An error message should be displayed stating "Invalid data entered"
-```

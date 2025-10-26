@@ -1,4 +1,3 @@
-```feature
 Feature: Companies Views - List, Detail and Create
 
 Scenario: Validate list companies page displays all existing companies correctly
@@ -72,4 +71,3 @@ Scenario: Validate editing a company with invalid data - logo too large
     And I click on the submit button
     Then I should see an error message indicating the invalid logo size
     And I should still be on the same page (edit company)
-```

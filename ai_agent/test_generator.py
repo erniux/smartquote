@@ -104,33 +104,52 @@ class ApiTestGenerator:
                 [f"# Archivo: {os.path.basename(p)}\n{c}" for p, c in file_list]
             )
 
-            prompt = f"""
-        Asumiendo que eres un Ingeniero Analista de  Pruebas Sr. SDET con certificacion en Analisis de Requerimientos ISTQB**    
-        Analiza el siguiente conjunto de archivos pertenecientes al módulo **{folder}**
-        (models, serializers y views) y genera un *un solo archivo .feature con todos los escenarios validos y escenarios de borde.*
-         El archivo debe cumplir con las siguientes reglas:
-        - Omite en tu respuesta comentarios y simbologia Markdown.
-        - Cada Archivo debe representarse como un `Feature`.
-        - Usa Escenarios claros con pasos Given/When/Then.
-        - Los enunciados deben estar escritos en Ingles.
-        - De tu respuesta elimina o evita repetir la pregunta, solo responde con el archivo genenrado.
-        
-        {combined_content}
-        """
+            # ---------------------------------------------------------
+            # 🧠 Prompt avanzado para generación de Features con Mistral
+            # ---------------------------------------------------------
+            system_prompt = (
+                "You are a Senior QA Automation Engineer (SDET) certified in ISTQB Requirements Analysis. "
+                "You always output strict and valid Gherkin syntax without explanations or summaries. "
+                "Your task is to analyze Django source code and generate executable .feature files suitable for pytest-bdd or Cucumber."
+            )
 
-            # Resto del bloque idéntico: envías el prompt y guardas un .feature
+            prompt = f"""
+            Assume you are acting as a **Senior SDET Test Analyst Engineer** certified in **ISTQB Requirements Analysis**.
+            Analyze the following Django module named **{folder}**, including its models, serializers, and views,
+            and generate a **single valid Cucumber .feature file** that contains all functional and edge-case scenarios.
+
+            Follow these strict rules:
+            - Your response must contain only valid Gherkin syntax.
+            - Do NOT explain, summarize, or describe the code.
+            - Do NOT include Markdown symbols, headers, code fences, or commentary.
+            - Each source file must be represented as a `Feature`.
+            - Each Scenario must include clear Given / When / Then steps written in English.
+            - Focus on realistic user interactions, validation errors, and business rules.
+            - Avoid restating this prompt. Only return the .feature file content.
+
+            Source files combined:
+            {combined_content}
+            """
+
+            print(f"🔄 Sending prompt to Ollama for module: {folder} ({len(prompt)} chars)...")
+
             response = self.client.chat(
                 model=self.config.OLLAMA_MODEL,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
             )
-            answer = response["message"]["content"]
 
+            answer = response["message"]["content"].strip()
+
+            # 💾 Guardar cada Feature en un archivo independiente
             feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
             with open(feature_output_path, "w", encoding="utf-8") as f:
-                f.write(answer.strip())
+                f.write(answer)
 
-            print(f"✅ Archivo .feature generado: {feature_output_path}")
-            self.export_results(feature_output_path, f"{folder}.feature")
+            print(f"✅ Archivo .feature generado correctamente: {feature_output_path}")
+
 
 
         #with open(output_path, "w", encoding="utf-8") as f:

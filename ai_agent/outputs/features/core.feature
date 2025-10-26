@@ -1,4 +1,3 @@
-```
 Feature: Core Module - Models, Serializers and Views
 
 Scenario: Valid product creation with all fields
@@ -30,4 +29,3 @@ Scenario: Massive product creation from a CSV file
   Given I have a valid CSV file with required fields (name, description, price, margin, unit, metal_symbol)
   When I send a POST request to the upload_csv action of ProductViewSet with the CSV file as form data
   Then the products should be created successfully and returned in the response
-```
