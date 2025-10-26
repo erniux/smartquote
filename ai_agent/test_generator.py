@@ -1,9 +1,14 @@
+# para ejecución: 
+# python ai_agent/test_generator.py --app_name=companies
+
+
 import os
 import json
 import time
 import httpx
 import ollama
 from datetime import datetime
+from collections import defaultdict
 from ai_agent.reader import CodeReader
 from ai_agent.config import Config
 
@@ -19,7 +24,7 @@ class ApiTestGenerator:
         self.export = export
         self.fallback = fallback
         self.start_time = datetime.now()
-        self.output_dir = "/app/outputs/tests"
+        self.output_dir = "/app/outputs/features"
         self.logs_dir = "/app/outputs/logs"
 
         print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
@@ -64,47 +69,50 @@ class ApiTestGenerator:
         output_path = os.path.join(self.output_dir, "generated_test.py")
         all_tests = []
 
-        for i, (path, content) in enumerate(files.items(), start=1):
-            print(f"🧩 Procesando bloque {i}/{total_files} ({len(content)} chars)")
-            try:
-                prompt = f"""
-Analiza el siguiente archivo de código fuente y genera:
 
-1. Pruebas unitarias o de integración usando pytest, con formato profesional.
-2. Solo usa comentarios con `#` dentro del código (nunca ``` ni ```python).
-3. No agregues explicaciones externas ni texto descriptivo fuera del código.
-4. Al final del archivo, incluye un bloque en formato Gherkin (Feature / Scenario)
-   que describa los mismos casos de prueba de forma resumida.
+        # Agrupar archivos por carpeta (app Django)
+        grouped_files = defaultdict(list)
+        for path, content in files.items():
+            folder = os.path.basename(os.path.dirname(path))  # ejemplo: quotations, sales
+            grouped_files[folder].append((path, content))
 
-El código debe ser funcional y limpio, sin imports innecesarios.
+        print(f"📦 Se agruparán {len(grouped_files)} módulos para análisis...")
 
-Archivo analizado: {os.path.basename(path)}
+        for i, (folder, file_list) in enumerate(grouped_files.items(), start=1):
+            print(f"🧩 Procesando módulo {i}/{len(grouped_files)}: {folder}")
+            
+            # Unir el contenido de los archivos de esa app
+            combined_content = "\n\n".join(
+                [f"# Archivo: {os.path.basename(p)}\n{c}" for p, c in file_list]
+            )
 
-{content}
-"""
+            prompt = f"""
+        Analiza el siguiente conjunto de archivos pertenecientes al módulo **{folder}**
+        (models, serializers y views) y genera un **solo archivo .feature** en formato Gherkin.
 
-                print(f"🔄 Enviando prompt a Ollama ({self.config.OLLAMA_BASE_URL})...")
-                print(f"🔄 Enviando prompt ({len(prompt)} chars)...")
-                try:
-                    start_block = time.time()
-                    response = self.client.chat(
-                        model=self.config.OLLAMA_MODEL,
-                        messages=[{"role": "user", "content": prompt}],
-                    )
-                    elapsed = round(time.time() - start_block, 2)
-                    content = response["message"]["content"]
-                    print(f"✅ Respuesta recibida en {elapsed}s: {content[:150]}...")
-                except Exception as e:
-                    print(f"⚠️ Error procesando bloque {i}: {e}")
+        Reglas:
+        - No incluyas texto explicativo ni análisis, solo contenido Gherkin válido.
+        - Cada funcionalidad principal debe representarse como un `Feature`.
+        - Usa `Scenario` claros con pasos Given/When/Then.
+        - Enfócate en los flujos funcionales reales (creación, edición, validaciones, errores, etc.).
+        - No uses ``` ni Markdown.
 
+        {combined_content}
+        """
 
-                answer = response["message"]["content"]
-                print(f"💬 Respuesta de Ollama: {answer[:120]}...")
+            # Resto del bloque idéntico: envías el prompt y guardas un .feature
+            response = self.client.chat(
+                model=self.config.OLLAMA_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            answer = response["message"]["content"]
 
-                all_tests.append(f"# ==== Tests para {os.path.basename(path)} ====\n{answer}\n")
-                print(f"✅ Bloque {i} procesado correctamente.")
-            except Exception as e:
-                print(f"⚠️ Error procesando bloque {i}: {e}")
+            feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
+            with open(feature_output_path, "w", encoding="utf-8") as f:
+                f.write(answer.strip())
+
+            print(f"✅ Archivo .feature generado: {feature_output_path}")
+
 
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(all_tests))
@@ -153,9 +161,11 @@ Archivo analizado: {os.path.basename(path)}
             log.write(f"📄 Tests generados: {output_path}\n")
             log.write(f"⏱️ Duración total: {duration}\n")
             log.write("=" * 40 + "\n")
-
+            log.write(f"📄 Features generados en: {self.output_dir}\n")
+        
         print(f"🪶 Log guardado en {log_path}")
         self.update_readme(end_time, duration)
+
 
     def update_readme(self, end_time, duration):
         """Actualiza el README.md con la información de la última ejecución."""

@@ -1,0 +1,30 @@
+# Imagen base de Python
+FROM python:3.11-slim
+
+# Evita que Python genere archivos .pyc
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Instalar dependencias básicas
+RUN apt-get update && apt-get install -y \
+    curl git build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /bdd
+
+# Copiar los requerimientos si existen
+COPY ./bdd/requirements.txt .
+
+# Instalar dependencias del proyecto y pytest-bdd
+RUN pip install --no-cache-dir -r requirements.txt || true
+RUN pip install pytest pytest-bdd pytest-html requests playwright
+
+# (Opcional) Instalar navegadores para Playwright
+RUN playwright install --with-deps chromium
+
+# Copiar el código del proyecto (tests, features, steps, etc.)
+COPY bdd /bdd
+
+# Comando por defecto: ejecutar las pruebas
+CMD ["pytest", "-v", "--gherkin-terminal-reporter"]

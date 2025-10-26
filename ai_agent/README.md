@@ -31,7 +31,7 @@ Además, **actualiza automáticamente este README.md** con la fecha y el modelo 
 |--------|-------------|
 | `--app <nombre>` | Procesa solo la app indicada |
 | `--fast` | Analiza solo los primeros 3 archivos |
-| `--export` | Copia el resultado a `/app/outputs/tests/` |
+| `--export` | Copia el resultado a `/app/outputs/features/` |
 | `--fallback` | Si no hay archivos en la app, analiza todo el proyecto |
 
 ---
@@ -120,15 +120,14 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
+
+
+
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-24 17:07:16`
-- 🤖 Modelo usado: `llama3:latest`
+- 📅 Fecha: `2025-10-26 02:57:23`
+- 🤖 Modelo usado: `mistral`
 - 🧩 App procesada: `Todas las apps`
 - ⚙️ Parámetros:  --export --fallback
-- ⏱️ Duración: `1:02:25.750344`
-
-
-### 🧩 Última generación de archivos .feature
-- 📅 Fecha: `2025-10-24 17:07:20`
-- 📂 Archivos generados:
-
+- ⏱️ Duración: `0:43:20.017794`

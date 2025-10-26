@@ -91,9 +91,7 @@ services:
       - backend
       - ollama
     volumes:
-      - ./ai_agent:/workspace/ai_agent
-      - ./backend:/workspace/backend
-      - ./frontend:/workspace/frontend
+      - .:/workspace
     working_dir: /workspace
     networks:
       - smartquote_net
@@ -108,11 +106,23 @@ services:
         python ai_agent/run_agent.py --fallback
       "
     healthcheck:
-      test: ["CMD-SHELL", "ollama list | grep llama3 || ollama pull llama3"]
+      test: ["CMD-SHELL", "ollama list | grep mistral || ollama pull mistral"]
       interval: 60s
       timeout: 20s
       retries: 3
 
+  bdd:
+    build:
+      context: .
+      dockerfile: Dockerfile.bdd
+    container_name: bdd-tests
+    depends_on:
+      - backend
+    volumes:
+      - .:/tests
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: pytest -v --gherkin-terminal-reporter
 
 networks:
   smartquote_net:

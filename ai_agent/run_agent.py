@@ -21,7 +21,7 @@ def main():
     parser.add_argument(
         "--export",
         action="store_true",
-        help="Exporta el archivo generado a /app/outputs/tests/",
+        help="Exporta el archivo generado a /app/outputs/features/",
     )
     parser.add_argument(
         "--fallback",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             source_path="/workspace/backend",
             output_dir="/workspace/ai_agent/features"
         )
-        feature_gen.generate_feature_files()
+        #feature_gen.generate_feature_files()
 
     except KeyboardInterrupt:
         print("\n⛔ Ejecución interrumpida por el usuario.")

@@ -20,7 +20,7 @@ class ApiTestGenerator:
         self.export = export
         self.fallback = fallback
         self.start_time = datetime.now()
-        self.output_dir = "/app/outputs/tests"
+        self.output_dir = "/app/outputs/features"
         self.logs_dir = "/app/outputs/logs"
 
         print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
@@ -182,8 +182,8 @@ class FeatureGenerator:
     Genera archivos .feature (BDD) a partir de tests generados por ApiTestGenerator.
     """
 
-    def __init__(self, source_path=None, output_dir="outputs/features"):
-        self.source_path = source_path or "outputs/tests/generated_test.py"
+    def __init__(self, source_path=None, output_dir="outputs/"):
+        self.source_path = source_path #or "outputs/features/generated_test.py"
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -231,18 +231,13 @@ class FeatureGenerator:
                 feature_content = self._convert_to_feature(filename, body)
                 feature_path = os.path.join(self.output_dir, f"{filename}.feature")
 
-                # En lugar de un solo archivo, genera uno por Feature
-                self._save_feature_files(feature_content)
-
-                #
-                #    with open(feature_path, "w", encoding="utf-8") as out:
-                #
-                #        out.write(feature_content)
-                #
-                #    feature_files.append(feature_path)
-                #print(f"✅ Archivo .feature generado: {feature_path}")
+                with open(feature_path, "w", encoding="utf-8") as out:
+                    out.write(feature_content)
+                feature_files.append(feature_path)
+                print(f"✅ Archivo .feature generado: {feature_path}")
 
         self._update_readme(feature_files)
+
 
 
     def _convert_to_feature(self, name, body):
@@ -308,3 +303,4 @@ class FeatureGenerator:
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write("# 🤖 AI Agent Execution Log\n" + info)
         print("🪶 README.md actualizado con la última generación de features.")
+

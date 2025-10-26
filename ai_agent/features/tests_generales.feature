@@ -1,1 +1,0 @@
-Feature: Tests Generales

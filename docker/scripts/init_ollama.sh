@@ -12,11 +12,14 @@ until curl -s http://localhost:11434/api/tags > /dev/null; do
 done
 
 # Descargar el modelo si no existe
-if ! ollama list | grep -q "llama3:latest"; then
-  echo "🧠 Descargando modelo llama3:latest..."
-  ollama pull llama3:latest
+#if ! ollama list | grep -q "llama3:latest"; then
+#  echo "🧠 Descargando modelo llama3:latest..."
+#  ollama pull llama3:latest
+if ! ollama list | grep -q "mistral"; then
+  echo "🧠 Descargando modelo mistral..."
+  ollama pull mistral:latest 
 else
-  echo "✅ Modelo llama3:latest ya disponible."
+  echo "✅ Modelo mistral:latest ya disponible."
 fi
 
 echo "🟢 Servidor Ollama iniciado y listo."
