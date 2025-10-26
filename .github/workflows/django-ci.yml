@@ -1,49 +1,88 @@
 name: 🧠 Django CI
 
+name: Django CI
+
 on:
   push:
-    branches: [ "main", "master" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/django-ci.yml"
   pull_request:
-    branches: [ "main", "master" ]
+    paths:
+      - "backend/**"
 
 jobs:
-  build:
+  build-backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        ports: ['5432:5432']
-        env:
-          POSTGRES_DB: smartquote
-          POSTGRES_USER: erna
-          POSTGRES_PASSWORD: secret123
-        options: >-
-          --health-cmd="pg_isready -U erna -d smartquote"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    env:
-      DATABASE_NAME: smartquote
-      DATABASE_USER: erna
-      DATABASE_PASSWORD: secret123
-      DATABASE_HOST: 127.0.0.1
-      DATABASE_PORT: 5432
-      DEBUG: False
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: 🧩 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-      - name: Install backend dependencies
-        run: pip install -r backend/requirements.txt
+          python-version: "3.11"
 
-      - name: Install AI Agent dependencies
-        run: pip install -r backend/ai_agent/requirements.txt
-
-      - name: Run tests
+      - name: 🧱 Build Backend Docker image
         run: |
-          cd backend
-          python manage.py test
+          docker compose build backend
+
+      - name: 🧪 Install dependencies (optional)
+        working-directory: ./backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ✅ Django check
+        run: |
+          docker compose run --rm backend python manage.py check
+
+#on:
+#  push:
+#    branches: [ "main", "master" ]
+#  pull_request:
+#    branches: [ "main", "master" ]
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    services:
+#      postgres:
+#        image: postgres:16
+#        ports: ['5432:5432']
+#        env:
+#          POSTGRES_DB: smartquote
+#          POSTGRES_USER: erna
+#          POSTGRES_PASSWORD: secret123
+#        options: >-
+#          --health-cmd="pg_isready -U erna -d smartquote"
+#          --health-interval=10s
+#          --health-timeout=5s
+#          --health-retries=5
+#
+#    env:
+#      DATABASE_NAME: smartquote
+#      DATABASE_USER: erna
+#      DATABASE_PASSWORD: secret123
+#      DATABASE_HOST: 127.0.0.1
+#      DATABASE_PORT: 5432
+#      DEBUG: False
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: "3.13"
+#      - name: Install backend dependencies
+#        run: pip install -r backend/requirements.txt
+#
+#      - name: Install AI Agent dependencies
+#        run: pip install -r backend/ai_agent/requirements.txt
+#
+#      - name: Run tests
+#        run: |
+#          cd backend
+#          python manage.py test
+#

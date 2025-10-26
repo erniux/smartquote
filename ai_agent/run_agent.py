@@ -1,5 +1,5 @@
 import argparse
-from ai_agent.test_generator import ApiTestGenerator
+from ai_agent.test_generator import TestGenerator
 #from ai_agent.feature_generator import FeatureGenerator
 
 
@@ -34,7 +34,7 @@ def main():
     print("\n🧠 Iniciando el agente con modo debug...\n")
 
     try:
-        generator = ApiTestGenerator(
+        generator = TestGenerator(
             fast_mode=args.fast,
             app_name=args.app,
             export=args.export,

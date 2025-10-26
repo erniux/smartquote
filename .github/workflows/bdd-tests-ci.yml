@@ -1,0 +1,11 @@
+name: BDD Tests (Coming Soon)
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  run-bdd-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "🚧 BDD Test workflow will be implemented once automation is ready."

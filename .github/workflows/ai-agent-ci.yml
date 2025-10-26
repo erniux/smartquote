@@ -1,64 +1,102 @@
 name: 🤖 AI Agent CI/CD
 
+name: AI Agent CI
+
 on:
   push:
-    branches:
-      - main
-      - develop
+    paths:
+      - "ai_agent/**"
+      - ".github/workflows/ai-agent-ci.yml"
   pull_request:
-    branches:
-      - main
+    paths:
+      - "ai_agent/**"
 
 jobs:
-  run-ai-agent:
+  build-ai-agent:
     runs-on: ubuntu-latest
 
     steps:
       - name: 🧩 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python 3.11
+      - name: ⚙️ Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: ⚙️ Install dependencies
+      - name: 🧱 Build AI Agent Docker image
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            echo "⚠️ No se encontró requirements.txt, instalando dependencias básicas..."
-            pip install pytest pytest-bdd rich tqdm openai python-dotenv
-          fi
+          docker compose build ai_agent
 
-      - name: 🧠 Run AI Agent
-        env:
-          OLLAMA_HOST: http://localhost:11434
-          PROJECT_BASE_PATH: ${{ github.workspace }}
+      - name: 🧪 Install dependencies (optional local check)
+        working-directory: ./ai_agent
         run: |
-          echo "🚀 Ejecutando AI Agent..."
-          python ai_agent/run_agent.py
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: 🧪 Run pytest-bdd on generated features
-        if: success()
+      - name: ✅ Lint check (optional)
         run: |
-          echo "🧩 Ejecutando pruebas BDD..."
-          pytest -v --maxfail=1 --disable-warnings --tb=short --color=yes || true
+          docker compose run --rm ai_agent flake8 .
 
-      - name: 📊 Save pytest results
-        if: always()
-        run: |
-          mkdir -p reports
-          pytest --maxfail=1 --disable-warnings --tb=short --color=yes --junitxml=reports/results.xml || true
-
-      - name: 📦 Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ai-agent-artifacts
-          path: |
-            ai_agent/logs/
-            ai_agent/features/
-            ai_agent/README.md
-            reports/
+#on:
+#  push:
+#    branches:
+#      - main
+#      - develop
+#  pull_request:
+#    branches:
+#      - main
+#
+#jobs:
+#  run-ai-agent:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: 🧩 Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: 🐍 Set up Python 3.11
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.11'
+#
+#      - name: ⚙️ Install dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          if [ -f requirements.txt ]; then
+#            pip install -r requirements.txt
+#          else
+#            echo "⚠️ No se encontró requirements.txt, instalando dependencias básicas..."
+#            pip install pytest pytest-bdd rich tqdm openai python-dotenv
+#          fi
+#
+#      - name: 🧠 Run AI Agent
+#        env:
+#          OLLAMA_HOST: http://localhost:11434
+#          PROJECT_BASE_PATH: ${{ github.workspace }}
+#        run: |
+#          echo "🚀 Ejecutando AI Agent..."
+#          python ai_agent/run_agent.py
+#
+#      - name: 🧪 Run pytest-bdd on generated features
+#        if: success()
+#        run: |
+#          echo "🧩 Ejecutando pruebas BDD..."
+#          pytest -v --maxfail=1 --disable-warnings --tb=short --color=yes || true
+#
+#      - name: 📊 Save pytest results
+#        if: always()
+#        run: |
+#          mkdir -p reports
+#          pytest --maxfail=1 --disable-warnings --tb=short --color=yes --junitxml=reports/results.xml || true
+#
+#      - name: 📦 Upload artifacts
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ai-agent-artifacts
+#          path: |
+#            ai_agent/logs/
+#            ai_agent/output/features/
+#            ai_agent/README.md
+#            reports/

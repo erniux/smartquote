@@ -13,7 +13,7 @@ from ai_agent.reader import CodeReader
 from ai_agent.config import Config
 
 
-class ApiTestGenerator:
+class TestGenerator:
     """Agente para generar pruebas automatizadas basadas en código fuente y modelos Ollama."""
 
     def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False):
@@ -27,7 +27,7 @@ class ApiTestGenerator:
         self.output_dir = "/app/outputs/features"
         self.logs_dir = "/app/outputs/logs"
 
-        print(f"🚀 Inicializando ApiTestGenerator con modelo={self.config.OLLAMA_MODEL}")
+        print(f"🚀 Inicializando TestGenerator con modelo={self.config.OLLAMA_MODEL}")
         print(f"🧩 Conectando cliente Ollama en {self.config.OLLAMA_BASE_URL} ...")
 
         # Crear cliente oficial de Ollama
@@ -115,16 +115,6 @@ class ApiTestGenerator:
             Analyze the following Django module named **{folder}**, including its models, serializers, and views,
             and generate a **single valid Cucumber .feature file** that contains all functional and edge-case scenarios.
 
-            Follow these strict rules:
-            - Your response must contain only valid Gherkin syntax.
-            - Do NOT explain, summarize, or describe the code.
-            - Do NOT include Markdown symbols, headers, code fences, or commentary.
-            - Each source file must be represented as a `Feature`.
-            - Each Scenario must include clear Given / When / Then steps written in English.
-            - Focus on realistic user interactions, validation errors, and business rules.
-            - Avoid restating this prompt. Only return the .feature file content.
-
-            Source files combined:
             {combined_content}
             """
 
@@ -138,6 +128,27 @@ class ApiTestGenerator:
                     ],
                 )
             answer = response["message"]["content"]
+
+            print(f"✅ Primer respuesta: {answer}")
+            
+
+            prompt = f""" with {answer} generate a .feature file, Follow these strict rules:
+            - Your response must contain only valid Gherkin syntax.
+            - Do NOT explain, summarize, or describe the code.
+            - Do NOT include Markdown symbols, headers, code fences, or commentary.
+            - Each source file must be represented as a `Feature`.
+            - Each Scenario must include clear Given / When / Then steps written in English.
+            - Focus on realistic user interactions, validation errors, and business rules.
+            - Avoid restating this prompt. Only return the .feature file content.
+
+            """
+
+            response = self.client.chat(
+                model=self.config.OLLAMA_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                )
+            answer = response["message"]["content"]
+            print(f"✅ Segunda respuesta: {answer}")
 
             feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
             with open(feature_output_path, "w", encoding="utf-8") as f:
