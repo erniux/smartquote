@@ -1,4 +1,4 @@
-name: Django CI
+name: 🦎Django CI
 
 on:
   push:
@@ -9,19 +9,19 @@ on:
     paths:
       - "backend/**"
 
-env:
-  DATABASE_DB: ${{ vars.DATABASE_DB }}
-  DATABASE_USER: ${{ vars.DATABASE_USER }}
-  DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-  DATABASE_HOST: ${{ vars.DATABASE_HOST }}
-  DATABASE_PORT: ${{ vars.DATABASE_PORT }}
-  ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
-  DJANGO_SETTINGS_MODULE: ${{ vars.DJANGO_SETTINGS_MODULE }}
-  DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-
 jobs:
   build-backend:
     runs-on: ubuntu-latest
+
+    env:
+      DATABASE_DB: ${{ vars.DATABASE_DB }}
+      DATABASE_USER: ${{ vars.DATABASE_USER }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_HOST: ${{ vars.DATABASE_HOST }}
+      DATABASE_PORT: ${{ vars.DATABASE_PORT }}
+      ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+      DJANGO_SETTINGS_MODULE: ${{ vars.DJANGO_SETTINGS_MODULE }}
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
 
     steps:
       - name: 🧩 Checkout repository

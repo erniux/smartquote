@@ -4,11 +4,9 @@ services:
     image: postgres:16
     container_name: postgres
     environment:
-      DATABASE_DB: ${DATABASE_DB}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -22,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: backend
-    env_file: .env
+    #env_file: .env
     environment:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
