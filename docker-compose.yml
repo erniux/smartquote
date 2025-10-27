@@ -5,7 +5,7 @@ services:
     container_name: postgres
     restart: always
     environment:
-      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
@@ -18,16 +18,21 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: backend
-    #env_file: .env
+    env_file:
+      - .env
     environment:
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_PORT: ${DATABASE_PORT}
-      DATABASE_NAME: ${DATABASE_DB}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - DJANGO_SUPERUSER_ROLE=${DJANGO_SUPERUSER_ROLE}
     command: ["/scripts/init_backend.sh"]
     depends_on:
       - postgres
@@ -83,10 +88,19 @@ services:
       context: .
       dockerfile: Dockerfile.ai_agent
     container_name: ai_agent
-    env_file: .env
+    env_file:
+      - .env
     environment:
-      PROJECT_BASE_PATH: /workspace
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - PROJECT_BASE_PATH=/workspace
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
     depends_on:
       - backend
       - ollama
