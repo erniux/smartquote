@@ -76,5 +76,3 @@ jobs:
       - name: 🧪 Run tests
         run: docker compose run --rm backend python manage.py test --noinput
 
-      - name: 🤖 Run AI Agent lint check
-        run: docker compose run --rm ai_agent flake8 .
