@@ -17,7 +17,7 @@ jobs:
       DATABASE_DB: ${{ vars.DATABASE_DB }}
       DATABASE_USER: ${{ vars.DATABASE_USER }}
       DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-      DATABASE_HOST: ${{ vars.DATABASE_HOST }}
+      DATABASE_HOST: postgres
       DATABASE_PORT: ${{ vars.DATABASE_PORT }}
       ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
       DJANGO_SETTINGS_MODULE: ${{ vars.DJANGO_SETTINGS_MODULE }}
@@ -54,3 +54,9 @@ jobs:
       - name: 🧪 Run Django system check
         run: |
           docker compose run --rm backend python manage.py check
+
+      - name: 🗃️ Run migrations
+        run: docker compose run --rm backend python manage.py migrate --noinput
+
+      - name: 🧪 Run tests
+        run: docker compose run --rm backend python manage.py test --noinput
