@@ -1,40 +1,51 @@
-name: 🦎Django CI
+# =======================================================
+# 🚀 Django CI Workflow
+# Ejecuta validaciones automáticas del backend (Django)
+# en cualquier rama o manualmente desde GitHub.
+# =======================================================
+
+name: 🦎 Django CI
 
 on:
   push:
-    paths:
-      - "backend/**"
-      - ".github/workflows/django-ci.yml"
+    branches:
+      - "**"                # Ejecutar en cualquier rama
   pull_request:
-    paths:
-      - "backend/**"
+    branches:
+      - "**"                # Ejecutar también en cualquier PR
+  workflow_dispatch:         # Permitir ejecución manual
 
 jobs:
-  build-backend:
+  build:
     runs-on: ubuntu-latest
 
+    # ==============================
+    # 🔐 Variables y Secrets
+    # ==============================
     env:
-      DATABASE_NAME: ${{ vars.DATABASE_NAME }}
-      DATABASE_USER: ${{ vars.DATABASE_USER }}
+      DATABASE_DB: smartquote
+      DATABASE_USER: mi_usuario
       DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
       DATABASE_HOST: postgres
-      DATABASE_PORT: ${{ vars.DATABASE_PORT }}
-      ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
-      DJANGO_SETTINGS_MODULE: ${{ vars.DJANGO_SETTINGS_MODULE }}
+      DATABASE_PORT: 5432
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DJANGO_SETTINGS_MODULE: smartquote.settings
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DJANGO_SUPERUSER_USERNAME: ${{ vars.DJANGO_SUPERUSER_USERNAME }}
-      DJANGO_SUPERUSER_EMAIL: ${{vars.DJANGO_SUPERUSER_EMAIL}}
-      DJANGO_SUPERUSER_PASSWORD: ${{secrets.DJANGO_SUPERUSER_PASSWORD}}
-      DJANGO_SUPERUSER_ROLE: ${{vars.DJANGO_SUPERUSER_ROLE}}
-      
+
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_EMAIL: admin@example.com
+      DJANGO_SUPERUSER_PASSWORD: admin123
+      DJANGO_SUPERUSER_ROLE: admin
+
+    # ==============================
+    # 📦 Servicios requeridos
+    # ==============================
     services:
       postgres:
         image: postgres:15
-        ports:
-          - 5432:5432
         env:
-          POSTGRES_DB: ${{ vars.DATABASE_NAME }}
-          POSTGRES_USER: ${{ vars.DATABASE_USER }}
+          POSTGRES_DB: smartquote
+          POSTGRES_USER: mi_usuario
           POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
         options: >-
           --health-cmd="pg_isready -U mi_usuario -d smartquote"
@@ -42,25 +53,28 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    # ==============================
+    # ⚙️ Pasos del pipeline
+    # ==============================
     steps:
-      - name: 🧩 Checkout repository
+      - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: 🐳 Build Backend Docker image
+      - name: 🐳 Set up Docker Compose
         run: |
-          docker compose build backend
+          sudo apt-get update && sudo apt-get install -y docker-compose
 
-      - name: 🧪 Run Django system check
-        run: |
-          docker compose run --rm backend python manage.py check
+      - name: 🧱 Build containers
+        run: docker compose build
+
+      - name: ✅ Run Django system check
+        run: docker compose run --rm backend python manage.py check
 
       - name: 🗃️ Run migrations
         run: docker compose run --rm backend python manage.py migrate --noinput
 
       - name: 🧪 Run tests
         run: docker compose run --rm backend python manage.py test --noinput
+
+      - name: 🤖 Run AI Agent lint check
+        run: docker compose run --rm ai_agent flake8 .
