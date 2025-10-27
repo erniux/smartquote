@@ -3,17 +3,17 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres
+    restart: always
     environment:
       POSTGRES_DB: ${DATABASE_DB}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      - smartquote_net
     ports:
       - "5432:5432"
-
+    networks:
+      - smartquote_net
  
   backend:
     build:
