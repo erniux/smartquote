@@ -23,7 +23,7 @@ jobs:
     # 🔐 Variables y Secrets
     # ==============================
     env:
-      DATABASE_DB: smartquote
+      DATABASE_NAME: smartquote
       DATABASE_USER: mi_usuario
       DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
       DATABASE_HOST: postgres
