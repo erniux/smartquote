@@ -1,6 +1,5 @@
 import argparse
 from ai_agent.test_generator import TestGenerator
-#from ai_agent.feature_generator import FeatureGenerator
 
 
 def main():
@@ -29,6 +28,12 @@ def main():
         help="Si no se encuentra la app, analiza todo el proyecto.",
     )
 
+    parser.add_argument(
+        "--convert", 
+        action="store_true", 
+        help="Convierte archivos .feature en archivos steps de pytest-bdd")
+
+
     args = parser.parse_args()
 
     print("\n🧠 Iniciando el agente con modo debug...\n")
@@ -40,7 +45,12 @@ def main():
             export=args.export,
             fallback=args.fallback,
         )
-        generator.generate_tests()
+        if args.convert:
+            print("🔁 Modo conversión de .feature → steps activado...")
+            generator.convert_to_steps(prefix=args.app or "")
+        else:
+            generator.generate_tests()
+         
     except KeyboardInterrupt:
         print("\n⛔ Ejecución interrumpida por el usuario.")
     except Exception as e:

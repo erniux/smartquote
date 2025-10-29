@@ -1,5 +1,6 @@
-pytest 
-pytest-bdd 
-pytest-html 
-requests 
+pytest
+pytest-bdd
 playwright
+pytest-html
+pytest-playwright
+requests

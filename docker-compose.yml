@@ -71,6 +71,7 @@ services:
       context: .
       dockerfile: Dockerfile.ollama
     container_name: ollama
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
@@ -82,6 +83,7 @@ services:
       interval: 60s
       timeout: 10s
       retries: 5
+
 
   ai_agent:
     build:
@@ -106,6 +108,7 @@ services:
       - ollama
     volumes:
       - .:/workspace
+      - ./bdd:/app/bdd    
     working_dir: /workspace
     networks:
       - smartquote_net
@@ -125,20 +128,33 @@ services:
       retries: 3
 
   bdd:
-    build:
-      context: .
-      dockerfile: Dockerfile.bdd
-    container_name: bdd-tests
-    depends_on:
-      - backend
-    volumes:
-      - .:/tests
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: pytest -v --gherkin-terminal-reporter
+      build:
+        context: .
+        dockerfile: Dockerfile.bdd
+      container_name: bdd
+      command: pytest -v --headed
+      depends_on:
+        - backend
+        - ollama
+        - frontend
+      volumes:
+        - ./bdd:/app/bdd
+        - ./frontend:/app/frontend
+      environment:
+        - DATABASE_NAME=${DATABASE_NAME}
+        - DATABASE_USER=${DATABASE_USER}
+        - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+        - DATABASE_HOST=${DATABASE_HOST}
+        - DATABASE_PORT=${DATABASE_PORT}
+        - BACKEND_URL=http://backend:8000
+        - FRONTEND_URL=http://frontend:5173
+        - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      networks:
+      - smartquote_net
 
 networks:
   smartquote_net:
+    driver: bridge
 
 volumes:
   pgdata:

@@ -3,6 +3,7 @@
 
 
 import os
+import re
 import json
 import time
 import httpx
@@ -266,4 +267,52 @@ class TestGenerator:
             feature.append(f"    Then el resultado es exitoso")
 
         return "\n".join(feature)
+
+
+    def convert_to_steps(self, prefix="core"):
+        """
+        Lee los archivos .feature del directorio bdd/tests/features y genera archivos steps
+        basados en pytest-bdd + Playwright.
+        """
+        features_dir = "/app/bdd/tests/features"
+        steps_dir = "/app/bdd/tests/steps"
+        os.makedirs(steps_dir, exist_ok=True)
+
+        print(f"🔍 Buscando archivos .feature con prefijo '{prefix}' en {features_dir}")
+
+        for file_name in os.listdir(features_dir):
+            if file_name.startswith(prefix) and file_name.endswith(".feature"):
+                feature_path = os.path.join(features_dir, file_name)
+                with open(feature_path, "r", encoding="utf-8") as f:
+                    feature_content = f.read()
+
+                print(f"🧩 Procesando {file_name}...")
+
+                prompt = f"""
+    Del siguiente archivo, que simula ser un archivo .feature escrito en Gherkin,
+    genera el archivo de steps en Python utilizando pytest-bdd y Playwright.
+
+    El archivo debe llamarse {prefix}_steps.py.
+    Asegúrate de:
+    - Incluir imports correctos: pytest, pytest_bdd, playwright.sync_api
+    - Usar decoradores @given, @when, @then
+    - No incluir explicaciones, ni Markdown, ni texto adicional.
+
+    Contenido del archivo .feature:
+    {feature_content}
+    """
+
+                response = self.client.chat(
+                    model=self.config.OLLAMA_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                steps_code = response["message"]["content"]
+
+                output_file = os.path.join(steps_dir, f"{prefix}_steps.py")
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(steps_code)
+
+                print(f"✅ Archivo de steps generado: {output_file}")
+
+        print("🎉 Conversión completada con éxito.")
 
