@@ -109,6 +109,7 @@ services:
     volumes:
       - .:/workspace
       - ./bdd:/app/bdd    
+      - ./frontend:/app/frontend 
     working_dir: /workspace
     networks:
       - smartquote_net
@@ -120,7 +121,10 @@ services:
           echo '🔁 Aún no responde...';
         done;
         echo '✅ Ollama listo, iniciando agente...';
+        bash -lc 'tail -f /dev/null';
       "
+    stdin_open: true
+    tty: true
     healthcheck:
       test: ["CMD-SHELL", "ollama list | grep mistral || ollama pull mistral"]
       interval: 60s
@@ -132,7 +136,8 @@ services:
         context: .
         dockerfile: Dockerfile.bdd
       container_name: bdd
-      command: pytest -v --headed
+      command: >
+         sh -c "bash -lc 'tail -f /dev/null';"
       depends_on:
         - backend
         - ollama

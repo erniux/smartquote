@@ -139,9 +139,30 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
 ### 🧾 Última ejecución registrada
-- 📅 Fecha: `2025-10-26 15:33:00`
-- 🤖 Modelo usado: `mistral`
+- 📅 Fecha: `2025-10-29 04:12:22`
+- 🤖 Modelo usado: `mistral:latest`
 - 🧩 App procesada: `quotations`
-- ⚙️ Parámetros:  --export 
-- ⏱️ Duración: `0:24:07.598317`
+- ⚙️ Parámetros:   
+- ⏱️ Duración: `0:14:40.737009`
+
+
+    
+    
+    
+    
+    ### 🧩 Última ejecución E2E completa
+    - 📅 Fecha: `2025-10-29 18:15:05`
+    - 🤖 Modelo usado: `mistral:latest`
+    - 🧩 App procesada: `quotations`
+    - ⚙️ Modo de ejecución: `features`
+    - ⏱️ Duración: `0:12:19.198201`
+
+    #### 📄 Features generados
+    - bdd/tests/features/quotations/api/quotations_api.feature
+- bdd/tests/features/quotations/ui/quotations_ui.feature
+
+    #### 🐍 Steps generados
+    No se encontraron steps.
+    

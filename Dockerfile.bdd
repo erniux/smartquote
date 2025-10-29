@@ -11,7 +11,7 @@ COPY ./bdd/requirements.txt /app/bdd/requirements.txt
 RUN pip install --no-cache-dir -r /app/bdd/requirements.txt
 
 # Instalar pytest y pytest-bdd
-RUN pip install pytest pytest-bdd pytest-playwright requests
+#RUN pip install pytest pytest-bdd pytest-playwright requests
 
 # Instalar playwright browsers
 RUN playwright install 

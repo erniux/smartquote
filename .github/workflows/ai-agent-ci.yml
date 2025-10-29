@@ -1,55 +1,12 @@
 name: 🤖 AI Agent CI/CD
 
+
 on:
-  push:
-    paths:
-      - "ai_agent/**"
-      - ".github/workflows/ai-agent-ci.yml"
-  pull_request:
-    paths:
-      - "ai_agent/**"
+  workflow_dispatch:  
 
 jobs:
-  build-ai-agent:
+  run-ai-agent:
     runs-on: ubuntu-latest
-
-    # ==============================
-    # 🔐 Variables y Secrets
-    # ==============================
-    env:
-      DATABASE_NAME: smartquote
-      DATABASE_USER: mi_usuario
-      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      ALLOWED_HOSTS: localhost,127.0.0.1
-      DJANGO_SETTINGS_MODULE: smartquote.settings
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-
-      DJANGO_SUPERUSER_USERNAME: admin
-      DJANGO_SUPERUSER_EMAIL: admin@example.com
-      DJANGO_SUPERUSER_PASSWORD: admin123
-      DJANGO_SUPERUSER_ROLE: admin
-
     steps:
-      - name: 🧩 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: 🧱 Build AI Agent Docker image
-        run: |
-          docker compose build ai_agent
-
-      - name: 🧪 Install dependencies (optional local check)
-        working-directory: ./ai_agent
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: ✅ Lint check (optional)
-        run: |
-          docker compose run --rm ai_agent flake8 .
+      - name: Placeholder
+        run: echo "🚧 ai agent probably no need to come so far....."

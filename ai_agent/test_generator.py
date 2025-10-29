@@ -12,14 +12,25 @@ from datetime import datetime
 from collections import defaultdict
 from ai_agent.reader import CodeReader
 from ai_agent.config import Config
+from ai_agent.frontend_reader import FrontendReader
 
 
 class TestGenerator:
     """Agente para generar pruebas automatizadas basadas en código fuente y modelos Ollama."""
 
-    def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False):
+    def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False, source="backend"):
         self.config = Config()
-        self.reader = CodeReader(app_name=app_name)
+        self.source = source
+        # Elegir reader según la fuente
+        if source == "frontend":
+            # Usa el lector de React/Next/Vite
+            self.reader = FrontendReader(app_name=app_name)  
+        else:
+            # Usa el lector de apps Django
+            self.reader = CodeReader(app_name=app_name)
+
+        print(f"📚 Source seleccionado: {self.source} | Reader: {self.reader.__class__.__name__}")
+
         self.fast_mode = fast_mode
         self.app_name = app_name
         self.export = export
@@ -104,44 +115,53 @@ class TestGenerator:
             combined_content = "\n\n".join(
                 [f"# Archivo: {os.path.basename(p)}\n{c}" for p, c in file_list]
             )
-
-            system_prompt = (
-                "You are a Senior QA Automation Engineer (SDET) certified in ISTQB Requirements Analysis. "
-                "You always output strict and valid Gherkin syntax without explanations or summaries. "
-                "Your task is to analyze Django source code and generate executable .feature files suitable for pytest-bdd or Cucumber."
-            )
-
-            prompt = f"""
-            Assume you are acting as a **Senior SDET Test Analyst Engineer** certified in **ISTQB Requirements Analysis**.
-            Analyze the following Django module named **{folder}**, including its models, serializers, and views,
-            and generate a **single valid Cucumber .feature file** that contains all functional and edge-case scenarios.
-
-            {combined_content}
-            """
-
-            # Resto del bloque idéntico: envías el prompt y guardas un .feature
-            response = self.client.chat(
-                model=self.config.OLLAMA_MODEL,
-                #messages=[{"role": "user", "content": prompt}],
-                 messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-                    ],
+            if self.source == "backend":
+                system_prompt = (
+                    "You are a Senior QA Automation Engineer. "
+                    "You always output strict and valid Gherkin syntax without explanations or summaries. "
+                    "Your task is to analyze Django source code and generate executable .feature files suitable for pytest-bdd or Cucumber."
                 )
-            answer = response["message"]["content"]
 
-            #print(f"✅ Primer respuesta: {answer}")
-            
-            prompt = f""" with {answer} generate a .feature file, Follow these strict rules:
-            - Your response must contain only valid Gherkin syntax.
-            - Do NOT explain, summarize, or describe the code.
-            - Do NOT include Markdown symbols, headers, code fences, or commentary.
-            - Each source file must be represented as a `Feature`.
-            - Each Scenario must include clear Given / When / Then steps written in English.
-            - Focus on realistic user interactions, validation errors, and business rules.
-            - Avoid restating this prompt. Only return the .feature file content.
+                prompt = f"""
+                Analyze the following Django module named **{folder}**, including its models, serializers, and views,
+                and generate a **single valid Cucumber .feature file** that contains all functional and edge-case scenarios.
 
-            """
+                {combined_content}
+                """
+
+                # Resto del bloque idéntico: envías el prompt y guardas un .feature
+                response = self.client.chat(
+                    model=self.config.OLLAMA_MODEL,
+                    #messages=[{"role": "user", "content": prompt}],
+                    messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                        ],
+                    )
+                answer = response["message"]["content"]
+
+                #print(f"✅ Primer respuesta: {answer}")
+                
+                prompt = f""" with {answer} generate a .feature file, Follow these strict rules:
+                - Your response must contain only valid Gherkin syntax.
+                - Do NOT explain, summarize, or describe the code.
+                - Do NOT include Markdown symbols, headers, code fences, or commentary.
+                - Each source file must be represented as a `Feature`.
+                - Each Scenario must include clear Given / When / Then steps written in English.
+                - Focus on realistic user interactions, validation errors, and business rules.
+                - Avoid restating this prompt. Only return the .feature file content.
+                """
+            else: 
+                system_prompt = (
+                    "You are a Senior QA Engineer specialized in Web E2E with Playwright."
+                    " Output only VALID Gherkin (no markdown, no comments)."
+                )
+                prompt = f"""
+            Analyze the React module **{folder}** (pages/components). Generate a single valid .feature for UI flows:
+            navigation, login, form fill, button clicks, success/error messages, route guards.
+            Use realistic user paths based on the components and pages.
+            {combined_content}
+            """    
 
             response = self.client.chat(
                 model=self.config.OLLAMA_MODEL,
@@ -153,7 +173,25 @@ class TestGenerator:
             feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
             with open(feature_output_path, "w", encoding="utf-8") as f:
                 f.write(answer)
-            
+
+            bdd_base_dir = f"/app/bdd/tests/features/{folder}"
+            if self.source == "backend":
+                bdd_api_dir = os.path.join(bdd_base_dir, "api")
+                os.makedirs(bdd_api_dir, exist_ok=True)
+                api_feature_path = os.path.join(bdd_api_dir, f"{folder}_api.feature")
+                with open(api_feature_path, "w", encoding="utf-8") as api_f:
+                    api_f.write(f"Feature: {folder.title()} API\n\n{answer.strip()}")
+                print(f"📄 Feature API duplicado en {api_feature_path}")
+            else:
+                bdd_ui_dir = os.path.join(bdd_base_dir, "ui")
+                os.makedirs(bdd_ui_dir, exist_ok=True)
+                ui_feature_path = os.path.join(bdd_ui_dir, f"{folder}_ui.feature")
+                with open(ui_feature_path, "w", encoding="utf-8") as ui_f:
+                    ui_f.write(f"Feature: {folder.title()} UI\n\n{answer.strip()}")
+                print(f"📄 Feature UI duplicado en {ui_feature_path}")
+
+            # marcador de sync (opcional, queda igual)
+
 
             print(f"✅ Archivo .feature generado: {feature_output_path}")
             self.export_results(feature_output_path, f"{folder}.feature")
@@ -367,6 +405,10 @@ class TestGenerator:
     - Verificar status_code y campos JSON
     - No incluir texto, explicaciones ni comentarios
     - Cada función debe tener cuerpo ejecutable o al menos un pass
+    - Usa la fixture 'api_base_url' y la sesión 'api' (requests.Session) si aplica.
+    - Guarda la última respuesta HTTP en 'ctx["response"]'.
+    - Lee/valida JSON con 'ctx["response"].json()'.
+
 
     Archivo: {file_name}
     Contenido:
@@ -380,16 +422,15 @@ class TestGenerator:
                 api_code = api_response["message"]["content"]
 
                 # Limpieza básica
-                api_code = re.sub(r"```[a-zA-Z]*", "", api_code)
-                api_code = re.sub(r"#.*", "", api_code)
-                api_code = api_code.strip()
+                api_code = self._cleanup_python_code(api_code)
+                ui_code  = self._cleanup_python_code(ui_code)
 
                 # Insertar pass si vacío
-                api_code = re.sub(
-                    r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+pass\b))",
-                    r"\1\n    pass\n",
-                    api_code
-                )
+                #api_code = re.sub(
+                #    r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+pass\b))",
+                #    r"\1\n    pass\n",
+                #    api_code
+                #)
 
                 # Guardar
                 api_output = os.path.join(steps_api_dir, f"{prefix}_api_steps.py")
@@ -409,6 +450,10 @@ class TestGenerator:
     - No incluir texto, explicaciones ni comentarios
     - Cada función debe tener cuerpo ejecutable o al menos un pass
     - Usa la ruta base del frontend correspondiente al módulo '{prefix}'
+    - Usa la fixture 'page' (Playwright sync) y 'expect'.
+    - Navega con page.goto('/ruta') (se resolverá contra fe_base_url).
+    - Implementa acciones reales: fill, click, expect; evita comentarios.
+
 
     Archivo: {file_name}
     Contenido:
@@ -440,3 +485,69 @@ class TestGenerator:
                 print(f"✅ Archivo UI guardado en {ui_output}")
 
         print("🎉 Conversión E2E completada con éxito.")
+
+
+    def _cleanup_python_code(self, code: str) -> str:
+        # 1) quitar fences/markdown/comentarios
+        code = re.sub(r"```[a-zA-Z]*", "", code)
+        code = re.sub(r"^\s*Here is.*$", "", code, flags=re.IGNORECASE | re.MULTILINE)
+        code = re.sub(r"^\s*#.*$", "", code, flags=re.MULTILINE)
+        code = code.strip()
+
+        # 2) eliminar 'self' de firmas
+        code = re.sub(r"\bdef\s+([a-zA-Z_]\w*)\s*\(\s*self\s*(,)?", r"def \1(", code)
+
+        # 3) asegurar ctx en todas las firmas de steps
+        code = re.sub(
+            r"(def\s+[a-zA-Z_]\w*\s*\()([^\)]*)\)",
+            lambda m: f"{m.group(1)}{self._ensure_ctx_in_params(m.group(2))})",
+            code
+        )
+
+        # 4) imports mínimos (pytest-bdd, requests, playwright)
+        if "from pytest_bdd import given, when, then" not in code:
+            code = "from pytest_bdd import given, when, then\n" + code
+        if "import pytest" not in code:
+            code = "import pytest\n" + code
+        if "requests." in code and "import requests" not in code:
+            code = "import requests\n" + code
+        if "expect(" in code and "from playwright.sync_api import expect" not in code:
+            code = "from playwright.sync_api import expect\n" + code
+        if (" Page" in code or "page." in code) and "from playwright.sync_api import Page" not in code:
+            code = "from playwright.sync_api import Page\n" + code
+        if "from urllib.parse import urljoin" not in code:
+            code = "from urllib.parse import urljoin\n" + code
+
+        # 5) requests.*(...) -> ctx["response"] = requests.*(...)
+        code = re.sub(
+            r"(\s*)(response\s*=\s*)?requests\.(get|post|put|delete)\(([^)]+)\)",
+            lambda m: f'{m.group(1)}ctx["response"] = requests.{m.group(3)}({m.group(4)})',
+            code
+        )
+
+        # 6) URLs relativas -> urljoin(api_base_url(), "/path")
+        code = re.sub(
+            r'ctx\["response"\]\s*=\s*requests\.(get|post|put|delete)\(\s*["\'](/[^"\']*)["\']\s*(,|\))',
+            r'ctx["response"] = requests.\1(urljoin(api_base_url(), r"\2")\3',
+            code
+        )
+
+        # 7) asegurar 'pass' si el cuerpo quedó vacío
+        code = re.sub(
+            r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+[^#\s]))",
+            r"\1\n    pass\n",
+            code
+        )
+
+        return code
+
+    def _ensure_ctx_in_params(self, params: str) -> str:
+        # normaliza lista de params y agrega ctx si no existe
+        parts = [x.strip() for x in params.split(",") if x.strip()]
+        if "ctx" not in parts:
+            parts.append("ctx")
+        seen, out = set(), []
+        for x in parts:
+            if x not in seen:
+                out.append(x); seen.add(x)
+        return ", ".join(out)
