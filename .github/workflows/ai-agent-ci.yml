@@ -13,6 +13,24 @@ jobs:
   build-ai-agent:
     runs-on: ubuntu-latest
 
+    # ==============================
+    # 🔐 Variables y Secrets
+    # ==============================
+    env:
+      DATABASE_NAME: smartquote
+      DATABASE_USER: mi_usuario
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DJANGO_SETTINGS_MODULE: smartquote.settings
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_EMAIL: admin@example.com
+      DJANGO_SUPERUSER_PASSWORD: admin123
+      DJANGO_SUPERUSER_ROLE: admin
+
     steps:
       - name: 🧩 Checkout repository
         uses: actions/checkout@v4

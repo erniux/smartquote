@@ -27,11 +27,14 @@ def main():
         action="store_true",
         help="Si no se encuentra la app, analiza todo el proyecto.",
     )
-
     parser.add_argument(
         "--convert", 
         action="store_true", 
         help="Convierte archivos .feature en archivos steps de pytest-bdd")
+    parser.add_argument(
+        "--full", 
+        action="store_true",
+        help="Ejecuta generación completa: features + steps (modo E2E)")
 
 
     args = parser.parse_args()
@@ -45,9 +48,22 @@ def main():
             export=args.export,
             fallback=args.fallback,
         )
-        if args.convert:
+                # 🔹 Modo completo E2E
+        if args.full:
+            print("🧩 Modo E2E activado: Generación completa de features + steps")
+            generator.generate_tests()
+            print("⏳ Esperando 5 segundos antes de iniciar conversión a steps...")
+            import time
+            time.sleep(5)
+            generator.convert_to_steps(prefix=args.app or "")
+            print("🎯 Generación completa (features + steps) finalizada.")
+
+        # 🔹 Solo conversión
+        elif args.convert:
             print("🔁 Modo conversión de .feature → steps activado...")
             generator.convert_to_steps(prefix=args.app or "")
+
+        # 🔹 Solo features
         else:
             generator.generate_tests()
          
