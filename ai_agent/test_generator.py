@@ -130,9 +130,8 @@ class TestGenerator:
                 )
             answer = response["message"]["content"]
 
-            print(f"✅ Primer respuesta: {answer}")
+            #print(f"✅ Primer respuesta: {answer}")
             
-
             prompt = f""" with {answer} generate a .feature file, Follow these strict rules:
             - Your response must contain only valid Gherkin syntax.
             - Do NOT explain, summarize, or describe the code.
