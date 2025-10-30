@@ -247,7 +247,7 @@ STRICT RULES:
 
         # Detectar carpetas E2E
         features_base = f"/app/bdd/tests/features/{self.app_name or 'unknown'}"
-        steps_base = f"/app/bdd/tests/steps/{self.app_name or 'unknown'}"
+        steps_base = f"/app/bdd/tests/features/steps/{self.app_name or 'unknown'}"
 
         def list_files_safe(path):
             try:
@@ -339,141 +339,140 @@ STRICT RULES:
     # ----------------------------
     # 🔁 Conversión .feature → steps (API y UI)
     # ----------------------------
-    def convert_to_steps(self, prefix="core"):
+    def convert_to_steps(self, prefix="quotations"):
         """
-        Convierte los archivos .feature en dos conjuntos de steps (API y UI) 
-        dentro de bdd/tests/steps/<app_name>/api y ui.
-        Recorre subcarpetas (api/ui) y nombra steps en función del .feature origen.
+        Conversión SIMPLE de .feature -> steps (pytest-bdd).
+        - Prompt corto para Ollama (API y UI).
+        - Sin 'ctx' ni 'context' en firmas.
+        - Siempre incluye 'scenarios(<ruta_relativa>)'.
+        - Si no hay implementación, deja 'pass'.
         """
-        import re
 
-        features_root = "/app/bdd/tests/features"
-        base_steps_dir = f"/app/bdd/tests/steps/{prefix}"
-        steps_ui_dir = os.path.join(base_steps_dir, "ui")
-        steps_api_dir = os.path.join(base_steps_dir, "api")
+        # Ajusta a 'bdd/tests' si ése es tu árbol real
+        FEATURES_ROOT = "/app/bdd/tests/features"
+        STEPS_ROOT    = f"/app/bdd/tests/features/steps/{prefix}"
 
-        os.makedirs(steps_ui_dir, exist_ok=True)
-        os.makedirs(steps_api_dir, exist_ok=True)
+        UI_STEPS_DIR  = os.path.join(STEPS_ROOT, "ui")
+        API_STEPS_DIR = os.path.join(STEPS_ROOT, "api")
+        os.makedirs(UI_STEPS_DIR, exist_ok=True)
+        os.makedirs(API_STEPS_DIR, exist_ok=True)
 
-        print(f"🔍 Buscando archivos .feature con prefijo '{prefix}' en {features_root} (recursivo)")
+        def _strip_fences(txt: str) -> str:
+            txt = re.sub(r"```[a-zA-Z]*", "", txt)
+            txt = re.sub(r"^\s*(Here is|A continuación|Below is|This file).*?$", "", txt,
+                        flags=re.IGNORECASE | re.MULTILINE)
+            return txt.strip()
 
-        for root, _, files in os.walk(features_root):
-            for file_name in files:
-                if not file_name.endswith(".feature"):
+        def _drop_context_params(code: str) -> str:
+            """
+            Elimina 'context' y 'ctx' de las firmas de funciones step.
+            Ej.: def foo(context, page): -> def foo(page):
+            Mantiene los dos puntos y respeta el resto de parámetros.
+            """
+            import re
+
+            pattern = re.compile(r"(def\s+)(?P<name>[A-Za-z_]\w*)\s*\((?P<params>[^)]*)\)\s*:")
+
+            def repl(m: re.Match) -> str:
+                name = m.group("name")
+                params = m.group("params")
+                parts = [p.strip() for p in params.split(",") if p.strip()]
+                parts = [p for p in parts if p not in ("context", "ctx")]
+                new_params = ", ".join(parts)
+                return f"def {name}({new_params}):"
+
+            return pattern.sub(repl, code)
+
+
+        def _ensure_header_and_scenarios(code: str, rel_feature: str, is_ui: bool) -> str:
+            header_lines = [
+                "import os",
+                "from playwright.sync_api import sync_playwright,Page"
+                "from behave import given, when, then"
+                f"from pages import {rel_feature}_page"
+            ]
+            header = "\n".join(header_lines) + "\n\n"
+
+            if "scenarios(" not in code:
+                code = header + f'scenarios(r"{rel_feature}")\n\n' + code
+            else:
+                # si ya trae scenarios, aseguramos imports al principio
+                if not code.lstrip().startswith("import") and "from pytest_bdd" not in code.splitlines()[0]:
+                    code = header + code
+            return code
+
+        def _ensure_bodies(code: str) -> str:
+            # si el cuerpo de una función está vacío, agrega 'pass'
+            return re.sub(
+                r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+[^#\s]))",
+                r"\1\n    pass\n",
+                code
+            )
+
+        print(f"🔍 Buscando .feature de '{prefix}' en {FEATURES_ROOT}…")
+        for root, _, files in os.walk(FEATURES_ROOT):
+            for fname in files:
+                if not fname.endswith(".feature"):
                     continue
-                # el prefijo debe estar en el nombre del archivo o en su ruta
-                if prefix and prefix not in file_name and prefix not in root:
+                # filtra por prefijo (en nombre o ruta)
+                if prefix not in fname and prefix not in root:
                     continue
 
-                feature_path = os.path.join(root, file_name)
+                feature_path = os.path.join(root, fname)
+                rel_from_api = os.path.relpath(feature_path, API_STEPS_DIR)
+                rel_from_ui  = os.path.relpath(feature_path, UI_STEPS_DIR)
+
                 with open(feature_path, "r", encoding="utf-8") as f:
-                    feature_content = f.read()
+                    feature_gherkin = f.read()
 
-                print(f"🧩 Procesando feature: {os.path.relpath(feature_path, features_root)}")
+                is_api = "/api/" in feature_path.replace("\\","/")
+                is_ui  = "/ui/"  in feature_path.replace("\\","/")
 
-                # Determinar destino API/UI por ruta
-                is_api = "/api/" in feature_path.replace("\\", "/")
-                is_ui = "/ui/" in feature_path.replace("\\", "/")
-
-                # -------------------------------
-                # 🧩 PROMPT PARA API
-                # -------------------------------
                 if is_api:
-                    api_prompt = f"""
-Eres un SDET Senior especializado en pruebas de API con pytest-bdd.
-Del siguiente archivo .feature genera el archivo de steps para pruebas de API usando Python y la librería 'requests'.
-Asegúrate de:
-- Incluir import requests, pytest y pytest_bdd
-- Implementar pasos para CRUD en endpoints tipo '/api/{prefix}/'
-- Verificar status_code y campos JSON
-- No incluir texto, explicaciones ni comentarios
-- Cada función debe tener cuerpo ejecutable o al menos un pass
-- Usa la fixture 'api_base_url' y la sesión 'api' (requests.Session) si aplica.
-- Guarda la última respuesta HTTP en 'ctx["response"]'.
-- Lee/valida JSON con 'ctx["response"].json()'.
-
-Archivo: {file_name}
-Contenido:
-{feature_content}
-"""
-                    api_response = self.client.chat(
+                    prompt = f"""
+                    Based on the attached file, that is a feature file, design a steps file using python-bdd. Not necesary to know the analysis you did to generate the file, just attach the final steps file
+                    Feature file:
+                    {feature_gherkin}
+                    """
+                    resp = self.client.chat(
                         model=self.config.OLLAMA_MODEL,
-                        messages=[{"role": "user", "content": api_prompt}],
+                        messages=[{"role":"user","content":prompt}],
                     )
-                    api_code = api_response["message"]["content"]
-                    api_code = self._cleanup_python_code(api_code)
-                    # --- Vincular feature a steps (API)
-                    from_path = os.path.dirname(steps_api_dir)  # carpeta base de steps/<app>
-                    api_output_dir = steps_api_dir              # carpeta steps/<app>/api
-                    rel_api_feature = os.path.relpath(feature_path, api_output_dir)
+                    code = _strip_fences(resp["message"]["content"])
+                    code = _drop_context_params(code)
+                    # header + scenarios(relpath)
+                    code = _ensure_header_and_scenarios(code, rel_from_api, is_ui=False)
+                    code = _ensure_bodies(code)
 
-                    # encabezado mínimo para escenarios
-                    api_header = (
-                        "import os\n"
-                        "import pytest\n"
-                        "from pytest_bdd import given, when, then, scenarios\n"
-                    )
+                    step_name = os.path.splitext(fname)[0] + "_steps.py"
+                    out_path = os.path.join(API_STEPS_DIR, step_name)
+                    with open(out_path, "w", encoding="utf-8") as w:
+                        w.write(code)
+                    print(f"✅ API steps -> {out_path}")
 
-                    # si no existe 'scenarios(', lo agregamos al inicio
-                    if "scenarios(" not in api_code:
-                        api_code = api_header + f'\nscenarios(r"{rel_api_feature}")\n\n' + api_code
-
-
-                    step_name = os.path.splitext(file_name)[0] + "_steps.py"   # p.ej. quotations_api_steps.py
-                    api_output = os.path.join(steps_api_dir, step_name)
-                    with open(api_output, "w", encoding="utf-8") as f:
-                        f.write(api_code)
-                    print(f"✅ Archivo API guardado en {api_output}")
-
-                # -------------------------------
-                # 🧩 PROMPT PARA UI
-                # -------------------------------
                 if is_ui:
-                    ui_prompt = f"""
-Eres un SDET Senior especializado en automatización UI con Playwright y pytest-bdd.
-Del siguiente archivo .feature genera el archivo de steps para pruebas UI usando Python y playwright.sync_api.
-Asegúrate de:
-- Importar pytest, pytest_bdd, playwright.sync_api y expect
-- Usar funciones page.goto(), page.fill(), page.click(), expect()
-- No incluir texto, explicaciones ni comentarios
-- Cada función debe tener cuerpo ejecutable o al menos un pass
-- Usa la fixture 'page' (Playwright sync) y 'expect'.
-- Navega con page.goto('/ruta') (se resolverá contra fe_base_url).
-- Implementa acciones reales: fill, click, expect; evita comentarios.
-
-Archivo: {file_name}
-Contenido:
-{feature_content}
-"""
-                    ui_response = self.client.chat(
+                    prompt = f"""
+                    Based on the attached file, that is a feature file, design a steps file using python-bdd.
+                    Feature file:
+                    {feature_gherkin}
+                    """
+                    resp = self.client.chat(
                         model=self.config.OLLAMA_MODEL,
-                        messages=[{"role": "user", "content": ui_prompt}],
+                        messages=[{"role":"user","content":prompt}],
                     )
-                    ui_code = ui_response["message"]["content"]
-                    ui_code = self._cleanup_python_code(ui_code)
+                    code = _strip_fences(resp["message"]["content"])
+                    code = _drop_context_params(code)
+                    code = _ensure_header_and_scenarios(code, rel_from_ui, is_ui=True)
+                    code = _ensure_bodies(code)
 
-                    # --- Vincular feature a steps (UI)
-                    ui_output_dir = steps_ui_dir               # carpeta steps/<app>/ui
-                    rel_ui_feature = os.path.relpath(feature_path, ui_output_dir)
+                    step_name = os.path.splitext(fname)[0] + "_steps.py"
+                    out_path = os.path.join(UI_STEPS_DIR, step_name)
+                    with open(out_path, "w", encoding="utf-8") as w:
+                        w.write(code)
+                    print(f"✅ UI steps  -> {out_path}")
 
-                    ui_header = (
-                        "import os\n"
-                        "import pytest\n"
-                        "from pytest_bdd import given, when, then, scenarios\n"
-                        "from playwright.sync_api import Page, expect\n"
-                    )
+        print("🎉 Conversión SIMPLE completada.")
 
-                    if "scenarios(" not in ui_code:
-                        ui_code = ui_header + f'\nscenarios(r"{rel_ui_feature}")\n\n' + ui_code
-
-
-                    step_name = os.path.splitext(file_name)[0] + "_steps.py"   # p.ej. quotations_ui_steps.py
-                    ui_output = os.path.join(steps_ui_dir, step_name)
-                    with open(ui_output, "w", encoding="utf-8") as f:
-                        f.write(ui_code)
-                    print(f"✅ Archivo UI guardado en {ui_output}")
-
-        print("🎉 Conversión E2E completada con éxito.")
 
     # ----------------------------
     # 🧰 Utilidades de Gherkin / Steps

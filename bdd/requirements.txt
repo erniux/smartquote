@@ -1,7 +1,3 @@
-pytest
-pytest-bdd
-playwright
-pytest-html
-pytest-playwright
-requests
-python-dotenv
+behave
+playwright  
+allure-behave
