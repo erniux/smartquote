@@ -173,17 +173,18 @@ Al final de cada ejecución, el agente actualiza la siguiente sección con la in
 
 
 
+
+
+
 ### 🧩 Última ejecución E2E completa
-- 📅 Fecha: `2025-10-30 05:10:37`
+- 📅 Fecha: `2025-10-30 19:52:02`
 - 🤖 Modelo usado: `mistral:latest`
 - 🧩 App procesada: `quotations`
-- ⚙️ Modo de ejecución: `E2E-BACKEND`
-- ⏱️ Duración: `0:30:44.062570`
+- ⚙️ Modo de ejecución: `features`
+- ⏱️ Duración: `1:53:14.432701`
 
 #### 📄 Features generados
 - bdd/tests/features/quotations/api/quotations_api.feature
-- bdd/tests/features/quotations/ui/Quotations_ui.feature
 
 #### 🐍 Steps generados
-- bdd/tests/features/steps/quotations/api/quotations_api_steps.py
-- bdd/tests/features/steps/quotations/ui/Quotations_ui_steps.py
+No se encontraron steps.

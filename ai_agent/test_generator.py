@@ -349,7 +349,7 @@ STRICT RULES:
         """
 
         # Ajusta a 'bdd/tests' si ése es tu árbol real
-        FEATURES_ROOT = "/app/bdd/tests/features"
+        FEATURES_ROOT = f"/app/bdd/tests/features/{prefix}"
         STEPS_ROOT    = f"/app/bdd/tests/features/steps/{prefix}"
 
         UI_STEPS_DIR  = os.path.join(STEPS_ROOT, "ui")
@@ -430,7 +430,7 @@ STRICT RULES:
 
                 if is_api:
                     prompt = f"""
-                    Based on the attached file, that is a feature file, design a steps file using python-bdd. Not necesary to know the analysis you did to generate the file, just attach the final steps file
+                    Based on the attached file, that is a feature file, design a steps file using behave and playwright Not necesary to know the analysis you did to generate the file, just attach the final steps file
                     Feature file:
                     {feature_gherkin}
                     """
@@ -441,7 +441,7 @@ STRICT RULES:
                     code = _strip_fences(resp["message"]["content"])
                     code = _drop_context_params(code)
                     # header + scenarios(relpath)
-                    code = _ensure_header_and_scenarios(code, rel_from_api, is_ui=False)
+                    #code = _ensure_header_and_scenarios(code, rel_from_api, is_ui=False)
                     code = _ensure_bodies(code)
 
                     step_name = os.path.splitext(fname)[0] + "_steps.py"
@@ -452,7 +452,7 @@ STRICT RULES:
 
                 if is_ui:
                     prompt = f"""
-                    Based on the attached file, that is a feature file, design a steps file using python-bdd.
+                    Based on the attached file, that is a feature file, design a steps file using behave and playwright.
                     Feature file:
                     {feature_gherkin}
                     """
@@ -462,7 +462,7 @@ STRICT RULES:
                     )
                     code = _strip_fences(resp["message"]["content"])
                     code = _drop_context_params(code)
-                    code = _ensure_header_and_scenarios(code, rel_from_ui, is_ui=True)
+                    #code = _ensure_header_and_scenarios(code, rel_from_ui, is_ui=True)
                     code = _ensure_bodies(code)
 
                     step_name = os.path.splitext(fname)[0] + "_steps.py"

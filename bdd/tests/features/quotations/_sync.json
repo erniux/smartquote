@@ -1,0 +1,6 @@
+{
+    "base_feature": "/app/outputs/features/quotations.feature",
+    "api_feature": "/app/bdd/tests/features/quotations/api/quotations_api.feature",
+    "ui_feature": null,
+    "timestamp": "2025-10-30T19:52:02.819174"
+}
