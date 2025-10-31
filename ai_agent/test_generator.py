@@ -1,5 +1,5 @@
 # ai_agent/test_generator.py
-# para ejecución: 
+# para ejecución:
 # python ai_agent/test_generator.py --app_name=companies
 
 import os
@@ -8,6 +8,8 @@ import json
 import time
 import httpx
 import ollama
+import subprocess
+from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 from ai_agent.reader import CodeReader
@@ -34,7 +36,9 @@ class TestGenerator:
         self.export = export
         self.fallback = fallback
         self.start_time = datetime.now()
-        self.output_dir = "/app/outputs/features"
+
+        # 👇 ahora los .feature van directo a la misma carpeta de features de BDD
+        self.features_dir = "/app/bdd/tests/features"
         self.logs_dir = "/app/outputs/logs"
 
         print(f"🚀 Inicializando TestGenerator con modelo={self.config.OLLAMA_MODEL}")
@@ -82,15 +86,13 @@ class TestGenerator:
     # ⚙️  Generador principal de pruebas
     # ----------------------------
     def generate_tests(self):
-        """Genera los tests automáticamente a partir del código fuente."""
-        os.makedirs(self.output_dir, exist_ok=True)
+        """Genera los tests features automáticamente a partir del código fuente."""
+        os.makedirs(self.features_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
         files = self.reader.read_files()
         total_files = len(files)
         print(f"📂 Se leerán {total_files} archivos para análisis...")
-
-        output_path = os.path.join(self.output_dir, "generated_test.py")
 
         # Agrupar archivos por carpeta (app)
         grouped_files = defaultdict(list)
@@ -121,6 +123,7 @@ STRICT RULES:
 - Return ONLY Gherkin content.
 - Start with 'Feature: {folder.title()} API'
 - Include multiple 'Scenario:' blocks with Given/When/Then (and And/But).
+- Include edge cases as possible.
 - No natural-language paragraphs, no explanations, no code fences.
 
 {combined_content}
@@ -137,6 +140,7 @@ STRICT RULES:
 - Return ONLY Gherkin content.
 - Start with 'Feature: {folder.title()} UI'
 - Include multiple 'Scenario:' blocks with Given/When/Then (and And/But).
+- Include edge cases as possible.
 - No natural-language paragraphs, no explanations, no code fences.
 
 {combined_content}
@@ -169,85 +173,33 @@ STRICT RULES:
                 title_fallback=f"{folder.title()} {'API' if self.source=='backend' else 'UI'}"
             )
 
-            # Guardar .feature base (en outputs)
-            feature_output_path = os.path.join(self.output_dir, f"{folder}.feature")
+            # ✅ Guardar .feature en la misma carpeta /features/
+            suffix = "api" if self.source == "backend" else "ui"
+            feature_filename = f"{folder}_{suffix}.feature"
+            feature_output_path = os.path.join(self.features_dir, feature_filename)
             with open(feature_output_path, "w", encoding="utf-8") as f:
                 f.write(answer)
 
             print(f"✅ Archivo .feature generado: {feature_output_path}")
-            self.export_results(feature_output_path, f"{folder}.feature")
 
-            # -------------------------------
-            # 🧩 Crear estructura E2E paralela (condicional por source)
-            # -------------------------------
-            bdd_base_dir = f"/app/bdd/tests/features/{folder}"
-            if self.source == "backend":
-                bdd_api_dir = os.path.join(bdd_base_dir, "api")
-                os.makedirs(bdd_api_dir, exist_ok=True)
-                api_feature_path = os.path.join(bdd_api_dir, f"{folder}_api.feature")
-                api_content = answer.strip()
-                if not api_content.startswith("Feature:"):
-                    api_content = f"Feature: {folder.title()} API\n\n{api_content}"
-                with open(api_feature_path, "w", encoding="utf-8") as api_f:
-                    api_f.write(api_content)
-                print(f"📄 Feature API duplicado en {api_feature_path}")
-                ui_feature_path = None
-            else:
-                bdd_ui_dir = os.path.join(bdd_base_dir, "ui")
-                os.makedirs(bdd_ui_dir, exist_ok=True)
-                ui_feature_path = os.path.join(bdd_ui_dir, f"{folder}_ui.feature")
-                ui_content = answer.strip()
-                if not ui_content.startswith("Feature:"):
-                    ui_content = f"Feature: {folder.title()} UI\n\n{ui_content}"
-                with open(ui_feature_path, "w", encoding="utf-8") as ui_f:
-                    ui_f.write(ui_content)
-                print(f"📄 Feature UI duplicado en {ui_feature_path}")
-                api_feature_path = None
-
-            # 🔗 Marcador de sincronización
-            sync_marker = os.path.join(bdd_base_dir, "_sync.json")
-            with open(sync_marker, "w", encoding="utf-8") as sync_f:
-                json.dump({
-                    "base_feature": feature_output_path,
-                    "api_feature": api_feature_path,
-                    "ui_feature": ui_feature_path,
-                    "timestamp": datetime.now().isoformat()
-                }, sync_f, indent=4)
-            print(f"🧭 Sincronización registrada en {sync_marker}")
-
-        print(f"✅ Tests generados en: {output_path}")
-        self.save_log(output_path)
+        # Log final
+        self.save_log(self.features_dir)
 
     # ----------------------------
-    # 💾 Exportación y logs
+    # 💾 Logs
     # ----------------------------
-    def export_results(self, output_path, file):
-        """Copia el archivo generado a la carpeta compartida."""
-        export_dir = os.path.join(
-            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "outputs", "features"
-        )
-        os.makedirs(export_dir, exist_ok=True)
-
-        dest_path = os.path.join(export_dir, file)
-        if os.path.abspath(output_path) != os.path.abspath(dest_path):
-            os.system(f"cp {output_path} {dest_path}")
-            print(f"📦 Archivo exportado a {dest_path}")
-        else:
-            print("⚙️  Archivo ya está en la ruta destino, no se copia.")
-
-    def save_log(self, output_path, mode="features"):
+    def save_log(self, _unused_output_path, mode="features"):
         """
         Guarda un log con resumen de ejecución y actualiza README.md automáticamente.
-        Incluye detalles E2E (features + steps) si se ejecutó con --full/--both.
         """
         end_time = datetime.now()
         duration = end_time - self.start_time
         log_name = f"ai_agent_report_{end_time.strftime('%Y%m%d_%H%M%S')}.txt"
+        os.makedirs(self.logs_dir, exist_ok=True)
         log_path = os.path.join(self.logs_dir, log_name)
 
-        # Detectar carpetas E2E
-        features_base = f"/app/bdd/tests/features/{self.app_name or 'unknown'}"
-        steps_base = f"/app/bdd/tests/features/steps/{self.app_name or 'unknown'}"
+        features_base = "/app/bdd/tests/features"
+        steps_base = "/app/bdd/tests/steps"  # 👈 corregido
 
         def list_files_safe(path):
             try:
@@ -283,7 +235,7 @@ STRICT RULES:
                 log.write("\n📄 Features: No se encontraron archivos.\n")
 
             if steps:
-                log.write("\n🐍 Steps generados:\n")
+                log.write("\n🐍 Steps presentes:\n")
                 for s in steps:
                     log.write(f"   - {s}\n")
             else:
@@ -298,23 +250,23 @@ STRICT RULES:
         self.update_readme_e2e(end_time, duration, features, steps, mode)
 
     def update_readme_e2e(self, end_time, duration, features, steps, mode):
-        """Actualiza el README.md con resumen E2E de la última ejecución."""
+        """Actualiza el README.md con resumen de la última ejecución."""
         readme_path = os.path.join(
             os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "README.md"
         )
 
         info = f"""
-### 🧩 Última ejecución E2E completa
+### 🧩 Última ejecución
 - 📅 Fecha: `{end_time.strftime("%Y-%m-%d %H:%M:%S")}`
 - 🤖 Modelo usado: `{self.config.OLLAMA_MODEL}`
 - 🧩 App procesada: `{self.app_name or 'Todas las apps'}`
 - ⚙️ Modo de ejecución: `{mode}`
 - ⏱️ Duración: `{duration}`
 
-#### 📄 Features generados
+#### 📄 Features en `bdd/tests/features`
 {chr(10).join(f"- {os.path.relpath(f, '/app')}" for f in features) if features else "No se encontraron features."}
 
-#### 🐍 Steps generados
+#### 🐍 Steps en `bdd/tests/steps`
 {chr(10).join(f"- {os.path.relpath(s, '/app')}" for s in steps) if steps else "No se encontraron steps."}
 """
 
@@ -322,8 +274,8 @@ STRICT RULES:
         if os.path.exists(readme_path):
             with open(readme_path, "r+", encoding="utf-8") as f:
                 content = f.read()
-                if "### 🧩 Última ejecución E2E completa" in content:
-                    start = content.find("### 🧩 Última ejecución E2E completa")
+                if "### 🧩 Última ejecución" in content:
+                    start = content.find("### 🧩 Última ejecución")
                     content = content[:start] + info
                 else:
                     content += "\n" + info
@@ -334,148 +286,10 @@ STRICT RULES:
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write("# 🤖 AI Agent Execution Log\n" + info)
 
-        print("📘 README.md actualizado con resumen E2E ✅")
+        print("📘 README.md actualizado con resumen ✅")
 
     # ----------------------------
-    # 🔁 Conversión .feature → steps (API y UI)
-    # ----------------------------
-    def convert_to_steps(self, prefix="quotations"):
-        """
-        Conversión SIMPLE de .feature -> steps (pytest-bdd).
-        - Prompt corto para Ollama (API y UI).
-        - Sin 'ctx' ni 'context' en firmas.
-        - Siempre incluye 'scenarios(<ruta_relativa>)'.
-        - Si no hay implementación, deja 'pass'.
-        """
-
-        # Ajusta a 'bdd/tests' si ése es tu árbol real
-        FEATURES_ROOT = f"/app/bdd/tests/features/{prefix}"
-        STEPS_ROOT    = f"/app/bdd/tests/features/steps/{prefix}"
-
-        UI_STEPS_DIR  = os.path.join(STEPS_ROOT, "ui")
-        API_STEPS_DIR = os.path.join(STEPS_ROOT, "api")
-        os.makedirs(UI_STEPS_DIR, exist_ok=True)
-        os.makedirs(API_STEPS_DIR, exist_ok=True)
-
-        def _strip_fences(txt: str) -> str:
-            txt = re.sub(r"```[a-zA-Z]*", "", txt)
-            txt = re.sub(r"^\s*(Here is|A continuación|Below is|This file).*?$", "", txt,
-                        flags=re.IGNORECASE | re.MULTILINE)
-            return txt.strip()
-
-        def _drop_context_params(code: str) -> str:
-            """
-            Elimina 'context' y 'ctx' de las firmas de funciones step.
-            Ej.: def foo(context, page): -> def foo(page):
-            Mantiene los dos puntos y respeta el resto de parámetros.
-            """
-            import re
-
-            pattern = re.compile(r"(def\s+)(?P<name>[A-Za-z_]\w*)\s*\((?P<params>[^)]*)\)\s*:")
-
-            def repl(m: re.Match) -> str:
-                name = m.group("name")
-                params = m.group("params")
-                parts = [p.strip() for p in params.split(",") if p.strip()]
-                parts = [p for p in parts if p not in ("context", "ctx")]
-                new_params = ", ".join(parts)
-                return f"def {name}({new_params}):"
-
-            return pattern.sub(repl, code)
-
-
-        def _ensure_header_and_scenarios(code: str, rel_feature: str, is_ui: bool) -> str:
-            header_lines = [
-                "import os",
-                "from playwright.sync_api import sync_playwright,Page"
-                "from behave import given, when, then"
-                f"from pages import {rel_feature}_page"
-            ]
-            header = "\n".join(header_lines) + "\n\n"
-
-            if "scenarios(" not in code:
-                code = header + f'scenarios(r"{rel_feature}")\n\n' + code
-            else:
-                # si ya trae scenarios, aseguramos imports al principio
-                if not code.lstrip().startswith("import") and "from pytest_bdd" not in code.splitlines()[0]:
-                    code = header + code
-            return code
-
-        def _ensure_bodies(code: str) -> str:
-            # si el cuerpo de una función está vacío, agrega 'pass'
-            return re.sub(
-                r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+[^#\s]))",
-                r"\1\n    pass\n",
-                code
-            )
-
-        print(f"🔍 Buscando .feature de '{prefix}' en {FEATURES_ROOT}…")
-        for root, _, files in os.walk(FEATURES_ROOT):
-            for fname in files:
-                if not fname.endswith(".feature"):
-                    continue
-                # filtra por prefijo (en nombre o ruta)
-                if prefix not in fname and prefix not in root:
-                    continue
-
-                feature_path = os.path.join(root, fname)
-                rel_from_api = os.path.relpath(feature_path, API_STEPS_DIR)
-                rel_from_ui  = os.path.relpath(feature_path, UI_STEPS_DIR)
-
-                with open(feature_path, "r", encoding="utf-8") as f:
-                    feature_gherkin = f.read()
-
-                is_api = "/api/" in feature_path.replace("\\","/")
-                is_ui  = "/ui/"  in feature_path.replace("\\","/")
-
-                if is_api:
-                    prompt = f"""
-                    Based on the attached file, that is a feature file, design a steps file using behave and playwright Not necesary to know the analysis you did to generate the file, just attach the final steps file
-                    Feature file:
-                    {feature_gherkin}
-                    """
-                    resp = self.client.chat(
-                        model=self.config.OLLAMA_MODEL,
-                        messages=[{"role":"user","content":prompt}],
-                    )
-                    code = _strip_fences(resp["message"]["content"])
-                    code = _drop_context_params(code)
-                    # header + scenarios(relpath)
-                    #code = _ensure_header_and_scenarios(code, rel_from_api, is_ui=False)
-                    code = _ensure_bodies(code)
-
-                    step_name = os.path.splitext(fname)[0] + "_steps.py"
-                    out_path = os.path.join(API_STEPS_DIR, step_name)
-                    with open(out_path, "w", encoding="utf-8") as w:
-                        w.write(code)
-                    print(f"✅ API steps -> {out_path}")
-
-                if is_ui:
-                    prompt = f"""
-                    Based on the attached file, that is a feature file, design a steps file using behave and playwright.
-                    Feature file:
-                    {feature_gherkin}
-                    """
-                    resp = self.client.chat(
-                        model=self.config.OLLAMA_MODEL,
-                        messages=[{"role":"user","content":prompt}],
-                    )
-                    code = _strip_fences(resp["message"]["content"])
-                    code = _drop_context_params(code)
-                    #code = _ensure_header_and_scenarios(code, rel_from_ui, is_ui=True)
-                    code = _ensure_bodies(code)
-
-                    step_name = os.path.splitext(fname)[0] + "_steps.py"
-                    out_path = os.path.join(UI_STEPS_DIR, step_name)
-                    with open(out_path, "w", encoding="utf-8") as w:
-                        w.write(code)
-                    print(f"✅ UI steps  -> {out_path}")
-
-        print("🎉 Conversión SIMPLE completada.")
-
-
-    # ----------------------------
-    # 🧰 Utilidades de Gherkin / Steps
+    # 🧰 Utilidades de Gherkin
     # ----------------------------
     def _is_valid_gherkin(self, text: str) -> bool:
         if not text:
@@ -515,15 +329,15 @@ STRICT RULES:
                "If information is missing, invent reasonable steps, but still return ONLY Gherkin.")
         if source == "backend":
             usr = f"""Generate a single valid Gherkin .feature for API behaviors of module "{folder}".
-            Focus on realistic flows and edge cases (auth, 4xx/5xx, permissions, validation).
-            STRICT RULES:
-            - Return ONLY Gherkin content.
-            - Start with 'Feature: {folder.title()} API'
-            - Include multiple 'Scenario:' blocks with Given/When/Then (and And/But).
-            - No natural-language paragraphs, no code fences.
+Focus on realistic flows and edge cases (auth, 4xx/5xx, permissions, validation).
+STRICT RULES:
+- Return ONLY Gherkin content.
+- Start with 'Feature: {folder.title()} API'
+- Include multiple 'Scenario:' blocks with Given/When/Then (and And/But).
+- No natural-language paragraphs, no code fences.
 
-            {combined_content}
-            """
+{combined_content}
+"""
         else:
             usr = f"""Generate a single valid Gherkin .feature for UI behaviors of module "{folder}".
 Focus on real user flows (navigation, forms, clicks, messages, guards).
@@ -536,95 +350,3 @@ STRICT RULES:
 {combined_content}
 """
         return [{"role": "system", "content": sys}, {"role": "user", "content": usr}]
-
-
-    def _cleanup_python_code(self, code: str) -> str:
-
-        # 1) quitar fences/markdown
-        code = re.sub(r"```[a-zA-Z]*", "", code)
-        # quitar encabezados tipo "Here is..." o prólogos narrativos frecuentes
-        code = re.sub(r"^\s*(Here is|A continuación|Below is|This file).*?$", "",
-                    code, flags=re.IGNORECASE | re.MULTILINE)
-
-        # 2) conservar SOLO líneas "de código" (imports, decorators, defs, escenarios)
-        kept = []
-        allowed_starts = (
-            "import ", "from ", "@", "def ", "class ", "scenarios(", "pytest.", "requests.", "os.", ""
-        )
-        for raw in code.replace("\r\n", "\n").split("\n"):
-            line = raw.rstrip()
-            # líneas en blanco pasan
-            if not line.strip():
-                kept.append("")
-                continue
-            # líneas válidas de código
-            if line.lstrip().startswith(allowed_starts):
-                kept.append(line)
-            # ignora todo lo demás (prosa, comentarios no útiles)
-        code = "\n".join(kept)
-
-        # 3) eliminar 'self' de firmas
-        code = re.sub(r"\bdef\s+([a-zA-Z_]\w*)\s*\(\s*self\s*(,)?", r"def \1(", code)
-
-        # 4) asegurar 'ctx' en firmas de steps
-        code = re.sub(
-            r"(def\s+[a-zA-Z_]\w*\s*\()([^\)]*)\)",
-            lambda m: f"{m.group(1)}{self._ensure_ctx_in_params(m.group(2))})",
-            code
-        )
-
-        # 5) encabezados/imports mínimos y deduplicación simple
-        blocks = []
-
-        def ensure_once(src: str, snippet: str) -> None:
-            if snippet not in src:
-                blocks.append(snippet)
-
-        ensure_once(code, "from pytest_bdd import given, when, then, scenarios")
-        ensure_once(code, "import pytest")
-        if "requests." in code:
-            ensure_once(code, "import requests")
-        ensure_once(code, "from urllib.parse import urljoin")
-
-        header = "\n".join(blocks)
-        if header:
-            code = header + "\n\n" + code
-
-        # 6) normalize: requests.*(...) -> ctx["response"] = ...
-        code = re.sub(
-            r"(\s*)(response\s*=\s*)?requests\.(get|post|put|delete)\(([^)]+)\)",
-            lambda m: f'{m.group(1)}ctx["response"] = requests.{m.group(3)}({m.group(4)})',
-            code
-        )
-
-        # 7) URLs relativas -> urljoin(api_base_url(), "/path")
-        code = re.sub(
-            r'ctx\["response"\]\s*=\s*requests\.(get|post|put|delete)\(\s*["\'](/[^"\']*)["\']\s*(,|\))',
-            r'ctx["response"] = requests.\1(urljoin(api_base_url(), r"\2")\3',
-            code
-        )
-
-        # 8) asegurar 'pass' si el cuerpo quedó vacío
-        code = re.sub(
-            r"(def [\w_]+\([^\)]*\):)(\s*\n(?!\s+[^#\s]))",
-            r"\1\n    pass\n",
-            code
-        )
-
-        # 9) agregar scenarios(...) si no está (ruta relativa genérica; la preciso en convert_to_steps)
-        if "scenarios(" not in code:
-            code = 'from pytest_bdd import scenarios\n' + code
-
-        return code
-
-
-    def _ensure_ctx_in_params(self, params: str) -> str:
-        # normaliza lista de params y agrega ctx si no existe
-        parts = [x.strip() for x in params.split(",") if x.strip()]
-        if "ctx" not in parts:
-            parts.append("ctx")
-        seen, out = set(), []
-        for x in parts:
-            if x not in seen:
-                out.append(x); seen.add(x)
-        return ", ".join(out)

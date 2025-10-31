@@ -1,3 +1,7 @@
+pytest
+pytest-bdd
+playwright
+pytest-html
+pytest-playwright
+requests
 behave
-playwright  
-allure-behave

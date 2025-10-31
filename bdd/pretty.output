@@ -1,0 +1,18 @@
+Feature: Quotation Management # tests/features/quotations/api/quotations_api.feature:1
+
+  Scenario: Generate Sale from Quotation (Admin Role)                                      # tests/features/quotations/api/quotations_api.feature:3
+    Given I am authenticated as an admin user                                              # None
+    And I have a quotation created with valid details                                      # None
+    When I send a GET request to the API endpoint for generating a sale from the quotation # None
+    Then I should receive a successful response                                            # None
+    And a new sale should be created associated with the quotation                         # None
+    And the status of the quotation should change to 'sold'                                # None
+
+  Scenario: Generate Sale from Quotation (Company Member Role)                             # tests/features/quotations/api/quotations_api.feature:11
+    Given I am authenticated as a company member user                                      # None
+    And I have a quotation created with valid details that I have access to                # None
+    When I send a GET request to the API endpoint for generating a sale from the quotation # None
+    Then I should receive a successful response                                            # None
+    And a new sale should be created associated with the quotation                         # None
+    And the status of the quotation should change to 'sold'                                # None
+

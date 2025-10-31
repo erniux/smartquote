@@ -1,0 +1,39 @@
+<testsuite name="quotations.api.quotations_api.Quotation Management" tests="2" errors="2" failures="0" skipped="0" time="0.0" timestamp="2025-10-30T21:02:40.859579" hostname="9458c92f95fa"><testcase classname="quotations.api.quotations_api.Quotation Management" name="Generate Sale from Quotation (Admin Role)" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/quotations/api/quotations_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Generate Sale from Quotation (Admin Role)
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    And I have a quotation created with valid details ... undefined in 0.000s
+    When I send a GET request to the API endpoint for generating a sale from the quotation ... undefined in 0.000s
+    Then I should receive a successful response ... undefined in 0.000s
+    And a new sale should be created associated with the quotation ... undefined in 0.000s
+    And the status of the quotation should change to 'sold' ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="quotations.api.quotations_api.Quotation Management" name="Generate Sale from Quotation (Company Member Role)" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as a company member user ... undefined in 0.000s
+Location: tests/features/quotations/api/quotations_api.feature:12
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Generate Sale from Quotation (Company Member Role)
+    Given I am authenticated as a company member user ... undefined in 0.000s
+    And I have a quotation created with valid details that I have access to ... undefined in 0.000s
+    When I send a GET request to the API endpoint for generating a sale from the quotation ... undefined in 0.000s
+    Then I should receive a successful response ... undefined in 0.000s
+    And a new sale should be created associated with the quotation ... undefined in 0.000s
+    And the status of the quotation should change to 'sold' ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>
