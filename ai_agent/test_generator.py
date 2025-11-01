@@ -1,43 +1,58 @@
 # ai_agent/test_generator.py
 # para ejecución:
-# python ai_agent/test_generator.py --app_name=companies
+# docker compose exec ai_agent python ai_agent/run_agent.py --app=quotations [--source backend|frontend] [--full]
 
 import os
 import re
-import json
 import time
 import httpx
 import ollama
-import subprocess
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
+
 from ai_agent.reader import CodeReader
 from ai_agent.config import Config
 from ai_agent.frontend_reader import FrontendReader
 
 
 class TestGenerator:
-    """Agente para generar pruebas automatizadas basadas en código fuente y modelos Ollama."""
+    """
+    Genera archivos .feature (Gherkin) para API (backend) o UI (frontend) usando Ollama,
+    con límites de contexto y priorización para acelerar la inferencia.
+    """
 
-    def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False, source="backend"):
+    # ---------- Límites para acelerar ----------
+    # Prioriza pocos archivos clave + truncado por archivo + truncado total
+    MAX_FILES_PER_MODULE = 6          # ej. models/serializers/views + 3 extras
+    MAX_CHARS_PER_FILE   = 30_000     # ~30KB por archivo
+    MAX_COMBINED_CHARS   = 80_000     # ~80KB total al prompt
+
+    def __init__(self, fast_mode=False, app_name=None, export=False, fallback=False, source=None):
         self.config = Config()
-        self.source = source
+
+        # Normaliza el parámetro: None / "", espacios, mayúsculas, etc.
+        src = (source or "").strip().lower()
+        if src not in ("backend", "frontend", ""):
+            raise ValueError(f"source inválido: {source!r}. Usa 'backend', 'frontend' o None.")
+        # Si no pasan source, esta instancia usa backend (run_agent crea otra para frontend)
+        self.source = src or "backend"
+
         # Elegir reader según la fuente
-        if source == "frontend":
+        if self.source == "frontend":
             self.reader = FrontendReader(app_name=app_name)
         else:
             self.reader = CodeReader(app_name=app_name)
 
         print(f"📚 Source seleccionado: {self.source} | Reader: {self.reader.__class__.__name__}")
 
-        self.fast_mode = fast_mode
+        self.fast_mode = bool(fast_mode)
         self.app_name = app_name
         self.export = export
         self.fallback = fallback
         self.start_time = datetime.now()
 
-        # 👇 ahora los .feature van directo a la misma carpeta de features de BDD
+        # Salida de features y logs
         self.features_dir = "/app/bdd/tests/features"
         self.logs_dir = "/app/outputs/logs"
 
@@ -54,7 +69,7 @@ class TestGenerator:
     # ----------------------------
     # 🔍 Verificación de disponibilidad
     # ----------------------------
-    def wait_for_ollama(self, url, timeout=300):
+    def wait_for_ollama(self, url, timeout=180):
         """Verifica que Ollama esté corriendo y que el modelo requerido esté disponible."""
         model_name = self.config.OLLAMA_MODEL
         print(f"🕓 Esperando a Ollama y al modelo '{model_name}' ...")
@@ -76,7 +91,7 @@ class TestGenerator:
             except Exception as e:
                 print(f"⏳ Aún no responde ({str(e)}), reintentando...")
 
-            time.sleep(5)
+            time.sleep(4)
 
         raise ConnectionError(
             f"❌ Tiempo agotado esperando a que Ollama y el modelo '{model_name}' estén listos."
@@ -92,7 +107,7 @@ class TestGenerator:
 
         files = self.reader.read_files()
         total_files = len(files)
-        print(f"📂 Se leerán {total_files} archivos para análisis...")
+        print(f"📂 Se leerán {total_files} archivos para análisis (antes de priorizar/truncar)...")
 
         # Agrupar archivos por carpeta (app)
         grouped_files = defaultdict(list)
@@ -103,12 +118,23 @@ class TestGenerator:
         print(f"📦 Se agruparán {len(grouped_files)} módulos para análisis...")
 
         for i, (folder, file_list) in enumerate(grouped_files.items(), start=1):
-            print(f"🧩 Procesando módulo {i}/{len(grouped_files)}: {folder}")
+            print(f"\n🧩 Procesando módulo {i}/{len(grouped_files)}: {folder}")
 
-            # Unir contenido
-            combined_content = "\n\n".join(
-                [f"# Archivo: {os.path.basename(p)}\n{c}" for p, c in file_list]
-            )
+            # 1) priorizar archivos clave
+            prioritized = self._prioritize_files(file_list, self.source)
+            if len(prioritized) > self.MAX_FILES_PER_MODULE:
+                print(f"⚖️  Limite de archivos por módulo: {self.MAX_FILES_PER_MODULE} (de {len(prioritized)})")
+                prioritized = prioritized[: self.MAX_FILES_PER_MODULE]
+
+            # 2) truncar contenido por archivo
+            truncated_files = []
+            for (p, c) in prioritized:
+                tc = self._truncate_text(c, self.MAX_CHARS_PER_FILE)
+                truncated_files.append((p, tc))
+
+            # 3) unificar con etiqueta de ruta y truncado total
+            combined = self._combine_with_labels(truncated_files, self.MAX_COMBINED_CHARS)
+            print(f"🧾 Tamaño final del prompt: {len(combined):,} chars")
 
             # Prompts estrictos por fuente
             if self.source == "backend":
@@ -126,7 +152,7 @@ STRICT RULES:
 - Include edge cases as possible.
 - No natural-language paragraphs, no explanations, no code fences.
 
-{combined_content}
+{combined}
 """
             else:
                 system_prompt = (
@@ -143,7 +169,7 @@ STRICT RULES:
 - Include edge cases as possible.
 - No natural-language paragraphs, no explanations, no code fences.
 
-{combined_content}
+{combined}
 """
 
             # Llamada al modelo (1ª)
@@ -151,6 +177,7 @@ STRICT RULES:
                 model=self.config.OLLAMA_MODEL,
                 messages=[{"role": "system", "content": system_prompt},
                           {"role": "user", "content": prompt}],
+                options=self._ollama_options()
             )
             answer = response["message"]["content"]
 
@@ -158,14 +185,15 @@ STRICT RULES:
             response = self.client.chat(
                 model=self.config.OLLAMA_MODEL,
                 messages=[{"role": "user", "content": f"Return ONLY valid Gherkin for the previous analysis.\n{answer}"}],
+                options=self._ollama_options()
             )
             answer = response["message"]["content"]
 
             # Validar + sanitizar Gherkin
             if not self._is_valid_gherkin(answer):
                 print("⚠️ Respuesta no válida como Gherkin. Reintentando con prompt estricto…")
-                strict_msgs = self._second_chance_prompt(folder, self.source, combined_content)
-                response = self.client.chat(model=self.config.OLLAMA_MODEL, messages=strict_msgs)
+                strict_msgs = self._second_chance_prompt(folder, self.source, combined)
+                response = self.client.chat(model=self.config.OLLAMA_MODEL, messages=strict_msgs, options=self._ollama_options())
                 answer = response["message"]["content"]
 
             answer = self._sanitize_to_gherkin(
@@ -182,111 +210,80 @@ STRICT RULES:
 
             print(f"✅ Archivo .feature generado: {feature_output_path}")
 
-        # Log final
-        self.save_log(self.features_dir)
-
     # ----------------------------
-    # 💾 Logs
+    # 🛠️ Utilidades de recorte/priorización
     # ----------------------------
-    def save_log(self, _unused_output_path, mode="features"):
+    def _prioritize_files(self, file_list, source):
         """
-        Guarda un log con resumen de ejecución y actualiza README.md automáticamente.
+        Ordena primero por peso semántico:
+          backend: models -> serializers -> views -> forms -> tasks -> otros
+          frontend: pages -> components -> hooks -> utils -> otros
         """
-        end_time = datetime.now()
-        duration = end_time - self.start_time
-        log_name = f"ai_agent_report_{end_time.strftime('%Y%m%d_%H%M%S')}.txt"
-        os.makedirs(self.logs_dir, exist_ok=True)
-        log_path = os.path.join(self.logs_dir, log_name)
-
-        features_base = "/app/bdd/tests/features"
-        steps_base = "/app/bdd/tests/steps"  # 👈 corregido
-
-        def list_files_safe(path):
-            try:
-                result = []
-                for root, _, files in os.walk(path):
-                    for f in files:
-                        if f.endswith((".feature", ".py")):
-                            result.append(os.path.join(root, f))
-                return result
-            except FileNotFoundError:
-                return []
-
-        features = list_files_safe(features_base)
-        steps = list_files_safe(steps_base)
-
-        # 🪶 Escribir log
-        with open(log_path, "w", encoding="utf-8") as log:
-            log.write("🧠 AI AGENT EXECUTION REPORT\n")
-            log.write("=" * 60 + "\n")
-            log.write(f"📅 Inicio: {self.start_time}\n")
-            log.write(f"📅 Fin: {end_time}\n")
-            log.write(f"🧩 App: {self.app_name or 'Todas las apps'}\n")
-            log.write(f"🤖 Modelo: {self.config.OLLAMA_MODEL}\n")
-            log.write(f"⚙️ Modo de ejecución: {mode}\n")
-            log.write(f"⏱️ Duración total: {duration}\n")
-            log.write("=" * 60 + "\n")
-
-            if features:
-                log.write("\n📄 Features generados:\n")
-                for f in features:
-                    log.write(f"   - {f}\n")
-            else:
-                log.write("\n📄 Features: No se encontraron archivos.\n")
-
-            if steps:
-                log.write("\n🐍 Steps presentes:\n")
-                for s in steps:
-                    log.write(f"   - {s}\n")
-            else:
-                log.write("\n🐍 Steps: No se encontraron archivos.\n")
-
-            log.write("\n" + "=" * 60 + "\n")
-            log.write(f"🗂 Logs almacenados en: {self.logs_dir}\n")
-
-        print(f"🪶 Log detallado guardado en {log_path}")
-
-        # ✅ Actualizar README con resumen
-        self.update_readme_e2e(end_time, duration, features, steps, mode)
-
-    def update_readme_e2e(self, end_time, duration, features, steps, mode):
-        """Actualiza el README.md con resumen de la última ejecución."""
-        readme_path = os.path.join(
-            os.getenv("PROJECT_BASE_PATH", "/workspace"), "ai_agent", "README.md"
-        )
-
-        info = f"""
-### 🧩 Última ejecución
-- 📅 Fecha: `{end_time.strftime("%Y-%m-%d %H:%M:%S")}`
-- 🤖 Modelo usado: `{self.config.OLLAMA_MODEL}`
-- 🧩 App procesada: `{self.app_name or 'Todas las apps'}`
-- ⚙️ Modo de ejecución: `{mode}`
-- ⏱️ Duración: `{duration}`
-
-#### 📄 Features en `bdd/tests/features`
-{chr(10).join(f"- {os.path.relpath(f, '/app')}" for f in features) if features else "No se encontraron features."}
-
-#### 🐍 Steps en `bdd/tests/steps`
-{chr(10).join(f"- {os.path.relpath(s, '/app')}" for s in steps) if steps else "No se encontraron steps."}
-"""
-
-        os.makedirs(os.path.dirname(readme_path), exist_ok=True)
-        if os.path.exists(readme_path):
-            with open(readme_path, "r+", encoding="utf-8") as f:
-                content = f.read()
-                if "### 🧩 Última ejecución" in content:
-                    start = content.find("### 🧩 Última ejecución")
-                    content = content[:start] + info
-                else:
-                    content += "\n" + info
-                f.seek(0)
-                f.write(content)
-                f.truncate()
+        weights = []
+        if source == "backend":
+            order = ["models.py", "serializers.py", "views.py", "forms.py", "tasks.py"]
         else:
-            with open(readme_path, "w", encoding="utf-8") as f:
-                f.write("# 🤖 AI Agent Execution Log\n" + info)
+            # frontend
+            order = ["pages", "components", "hooks", "utils"]
 
-        print("📘 README.md actualizado con resumen ✅")
+        def score(path: str) -> int:
+            p = path.lower()
+            for idx, key in enumerate(order):
+                if key in p:
+                    return idx
+            return len(order) + 1
+
+        # sort by score then shorter paths
+        weights = sorted(file_list, key=lambda pc: (score(pc[0]), len(pc[0])))
+        print("🧮 Prioridad de archivos:")
+        for p, _ in weights:
+            print(f"   • {p}")
+        return weights
+
+    def _truncate_text(self, text: str, max_chars: int) -> str:
+        if len(text) <= max_chars:
+            return text
+        head = text[: max_chars // 2]
+        tail = text[-(max_chars // 2) :]
+        return head + "\n\n# ... [TRUNCATED] ...\n\n" + tail
+
+    def _combine_with_labels(self, files, max_total_chars: int) -> str:
+        """
+        Une archivos con etiqueta de ruta y corta si supera max_total_chars.
+        """
+        chunks = []
+        total = 0
+        for path, content in files:
+            label = f"# Archivo: {os.path.basename(path)}\n"
+            block = label + content.strip() + "\n\n"
+            if total + len(block) > max_total_chars:
+                remaining = max_total_chars - total
+                if remaining > 0:
+                    block = block[:remaining] + "\n# [TRUNCATED PROMPT]\n"
+                    chunks.append(block)
+                print(f"✂️  Prompt alcanzó límite total {max_total_chars:,} chars.")
+                break
+            chunks.append(block)
+            total += len(block)
+        return "".join(chunks)
+
+    def _ollama_options(self) -> dict:
+        """
+        Parámetros para acelerar Ollama. Ajusta num_thread según tu host.
+        """
+        if self.fast_mode:
+            return {
+                "num_predict": 256,
+                "num_ctx": 1536,
+                "num_thread": 6,
+                "temperature": 0.2,
+            }
+        return {
+            "num_predict": 512,
+            "num_ctx": 2048,
+            "num_thread": 6,
+            "temperature": 0.2,
+        }
 
     # ----------------------------
     # 🧰 Utilidades de Gherkin
