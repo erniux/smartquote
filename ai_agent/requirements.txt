@@ -6,3 +6,4 @@ behave
 requests==2.31.0
 playwright
 pytest-asyncio
+pytest-playwright

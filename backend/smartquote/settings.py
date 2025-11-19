@@ -183,3 +183,12 @@ else:
 # PRIMARY KEY DEFAULT
 # -----------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# FORGOT PASSWORD EMAIL SETTINGS
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@smartquote.local"
+
+# URL del frontend donde el usuario va a cambiar su contraseña
+FRONTEND_URL = "http://localhost:5173"  

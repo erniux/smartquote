@@ -9,7 +9,7 @@ WORKDIR /workspace
 COPY ai_agent/requirements.txt /workspace/requirements.txt
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-RUN playwright install
+RUN playwright install --with-deps
 # (El código se montará como volumen; copiamos por si se quiere buildar sin volúmenes)
 COPY ai_agent /workspace/ai_agent
 

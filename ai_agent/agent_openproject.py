@@ -18,7 +18,8 @@ PROJECT_ID = 2         # Confirmado: ID del proyecto de destino
 TYPE_ID_BUG = 7        # Confirmado: ID del tipo de tarea "Bug"
 
 # VALOR QUE DEBES ENCONTRAR Y REEMPLAZAR EN TU INSTANCIA DE OPENPROJECT:
-TARGET_STATUS_ID = 4   # <<-- ID del estado "Listo para automatizar" (EJ: 4)
+#TARGET_STATUS_ID = 4   # <<-- ID del estado "Listo para automatizar" (EJ: 4)
+TARGET_STATUS_ID = 9   # <<-- ID del estado "Listo para re-test" (EJ: 4)
 # -------------------------------------------------------------------
 
 AUTH_OBJECT = requests.auth.HTTPBasicAuth('apikey', API_KEY)
@@ -111,14 +112,20 @@ def generate_playwright_test(wp_id: int, subject: str, test_file_name: str, targ
     # 1. Ingeniería del Prompt para Mistral
     # El prompt debe ser muy específico en el formato de salida que esperamos (solo código).
     system_prompt = (
-        "Eres un experto en Playwright y **Python (Pytest)**. Tu única tarea es generar un código de prueba "
-        "completo y ejecutable. La salida debe ser **SOLO EL CÓDIGO** en Python y no debe contener "
-        "ninguna explicación o formato Markdown. "
-        "Asegúrate de: "
-        "1. Definir una función de prueba asíncrona (`async def`) con el decorador `@pytest.mark.asyncio`."
-        "2. Incluir el fixture `page` como **argumento de la función de prueba**: `async def test_my_feature(page):`."
-        "3. NO usar `async with page:` dentro del cuerpo del test, ya que es incorrecto."
-    )
+    "Eres un experto en Playwright y Python (Pytest). Tu única tarea es generar código de prueba "
+    "completo y ejecutable. La salida debe ser SOLO EL CÓDIGO en Python y no debe contener "
+    "ninguna explicación o formato Markdown. "
+    "Asegúrate de: "
+    "1. Definir una función de prueba asíncrona (`async def`) con el decorador `@pytest.mark.asyncio`."
+    "2. Incluir el fixture `page` como argumento de la función de prueba: `async def test_my_feature(page):`."
+    "3. NO usar `async with page:` dentro del cuerpo del test, ya que es incorrecto."
+    "4. NO DEBES incluir comentarios explicativos en el código."
+    "5. Usar selectores CSS realistas y comunes para interactuar con la página."
+    "6. Incluir aserciones claras para verificar el comportamiento esperado."
+    "7. Utiliza unicamente el {target_url} para navegar y realizar acciones, no agregues URLs adicionales."
+    "**ADVERTENCIA**: SI NO PUEDES CUMPLIR TODAS LAS REGLAS, GENERA SOLO UN 'PASS'. NO PROPORCIONES CÓDIGO DEFECTUOSO."
+    "**INICIA LA RESPUESTA CON EL CÓDIGO AHORA.**"
+)
     user_prompt = (
         f"Genera un test de Playwright en **Python (usando Pytest)** para verificar el siguiente BUG de OpenProject. "
         f"El bug es: **{subject}**. "
