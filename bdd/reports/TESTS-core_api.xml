@@ -1,0 +1,205 @@
+<testsuite name="core_api.Core API" tests="12" errors="12" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.773892" hostname="17911e10158c"><testcase classname="core_api.Core API" name="Auth and List Products" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated ... undefined in 0.000s
+Location: tests/features/core_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Auth and List Products
+    Given user is authenticated ... undefined in 0.000s
+    When user sends GET request to /products ... undefined in 0.000s
+    Then status code should be 200 ... undefined in 0.000s
+    And response should contain a list of products with keys: name, id, description, price, margin, unit, metal_symbol, created_at, updated_at ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="CRUD Product with Valid Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated ... undefined in 0.000s
+Location: tests/features/core_api.feature:10
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: CRUD Product with Valid Data
+    Given user is authenticated ... undefined in 0.000s
+    When user sends POST request to /products with valid data ... undefined in 0.000s
+    Then status code should be 201 ... undefined in 0.000s
+    And response should contain created product details with keys: name, id, description, price, margin, unit, metal_symbol, created_at, updated_at ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="CRUD Product with Missing Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated ... undefined in 0.000s
+Location: tests/features/core_api.feature:16
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: CRUD Product with Missing Data
+    Given user is authenticated ... undefined in 0.000s
+    When user sends POST request to /products with missing data ... undefined in 0.000s
+    Then status code should be 400 ... undefined in 0.000s
+    And response should contain error message for missing fields ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Update Product Valid Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:22
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update Product Valid Data
+    Given user is authenticated and product exists ... undefined in 0.000s
+    When user sends PUT request to /products/<product_id> with valid data ... undefined in 0.000s
+    Then status code should be 200 ... undefined in 0.000s
+    And response should contain updated product details with keys: name, id, description, price, margin, unit, metal_symbol, created_at, updated_at ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Update Product Invalid Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:28
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update Product Invalid Data
+    Given user is authenticated and product exists ... undefined in 0.000s
+    When user sends PUT request to /products/<product_id> with invalid data ... undefined in 0.000s
+    Then status code should be 400 ... undefined in 0.000s
+    And response should contain error message for invalid fields ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Delete Product" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:34
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Delete Product
+    Given user is authenticated and product exists ... undefined in 0.000s
+    When user sends DELETE request to /products/<product_id> ... undefined in 0.000s
+    Then status code should be 204 ... undefined in 0.000s
+    And response should be empty ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Get Product by ID" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:40
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get Product by ID
+    Given user is authenticated and product exists ... undefined in 0.000s
+    When user sends GET request to /products/<product_id> ... undefined in 0.000s
+    Then status code should be 200 ... undefined in 0.000s
+    And response should contain product details with keys: name, id, description, price, margin, unit, metal_symbol, created_at, updated_at ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Validate Dynamic Price Source" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product with dynamic_price_source exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:46
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Validate Dynamic Price Source
+    Given user is authenticated and product with dynamic_price_source exists ... undefined in 0.000s
+    When user sends GET request to /products/<product_id>/update_dynamic_price ... undefined in 0.000s
+    Then status code should be 200 or 404 (if product not found) ... undefined in 0.000s
+    And response should contain updated price if successful or error message otherwise ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Update Price from Metal Symbol" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and product with metal_symbol exists ... undefined in 0.000s
+Location: tests/features/core_api.feature:52
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update Price from Metal Symbol
+    Given user is authenticated and product with metal_symbol exists ... undefined in 0.000s
+    When user sends GET request to /products/<product_id>/update_price_from_metal ... undefined in 0.000s
+    Then status code should be 200, 404 (if product or metal_price not found) or 500 (exception thrown during execution) ... undefined in 0.000s
+    And response should contain updated price if successful or error message otherwise ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Upload CSV with Products" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated ... undefined in 0.000s
+Location: tests/features/core_api.feature:58
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Upload CSV with Products
+    Given user is authenticated ... undefined in 0.000s
+    When user sends POST request to /products/csv_layout ... undefined in 0.000s
+    Then status code should be 200 ... undefined in 0.000s
+    And response should contain csv layout for products (column headers) ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Upload CSV with Products (Valid Data)" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and has CSV with valid product data ... undefined in 0.000s
+Location: tests/features/core_api.feature:64
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Upload CSV with Products (Valid Data)
+    Given user is authenticated and has CSV with valid product data ... undefined in 0.000s
+    When user sends POST request to /products/upload_csv with CSV data ... undefined in 0.000s
+    Then status code should be 201 ... undefined in 0.000s
+    And response should contain number of products created and list of names of the created products ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="core_api.Core API" name="Upload CSV with Products (Invalid Data)" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is authenticated and has CSV with invalid product data ... undefined in 0.000s
+Location: tests/features/core_api.feature:70
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Upload CSV with Products (Invalid Data)
+    Given user is authenticated and has CSV with invalid product data ... undefined in 0.000s
+    When user sends POST request to /products/upload_csv with CSV data ... undefined in 0.000s
+    Then status code should be 400 ... undefined in 0.000s
+    And response should contain error message for each row with errors ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

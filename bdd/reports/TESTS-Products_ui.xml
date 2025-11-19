@@ -1,0 +1,220 @@
+<testsuite name="Products_ui.Products UI" tests="13" errors="13" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.702139" hostname="17911e10158c"><testcase classname="Products_ui.Products UI" name="Navigation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on the homepage ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Navigation
+    Given user is on the homepage ... undefined in 0.000s
+    When user clicks "Productos" in navigation ... undefined in 0.000s
+    Then user should be on Products page ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Loading Products" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:9
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Loading Products
+    Given user is on Products page ... undefined in 0.000s
+    When initial page load occurs ... undefined in 0.000s
+    Then loading state should be true ... undefined in 0.000s
+    And no products are displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Fetching Products Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page with loading state as true ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:15
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Fetching Products Success
+    Given user is on Products page with loading state as true ... undefined in 0.000s
+    When fetchProducts function is called ... undefined in 0.000s
+    Then loading state should be false ... undefined in 0.000s
+    And products are displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Fetching Products Error" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page with loading state as true ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:21
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Fetching Products Error
+    Given user is on Products page with loading state as true ... undefined in 0.000s
+    When an error occurs while fetching products ... undefined in 0.000s
+    Then toast message "❌ No se pudieron cargar los productos" is displayed ... undefined in 0.000s
+    And loading state remains false ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Search Bar Functionality" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:27
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Search Bar Functionality
+    Given user is on Products page ... undefined in 0.000s
+    When user enters search term in the search bar and presses enter ... undefined in 0.000s
+    Then filtered products are displayed based on the entered search term ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="CSV Upload Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page with file input field hidden ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:32
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: CSV Upload Success
+    Given user is on Products page with file input field hidden ... undefined in 0.000s
+    When user clicks "📤 Cargar CSV" button and selects a .csv file ... undefined in 0.000s
+    Then file is selected and handleCSVUpload function is called ... undefined in 0.000s
+    And toast message for successful CSV upload is displayed ... undefined in 0.000s
+    And products are reloaded ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="CSV Upload Error" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page with file input field hidden ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:39
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: CSV Upload Error
+    Given user is on Products page with file input field hidden ... undefined in 0.000s
+    When user clicks "📤 Cargar CSV" button and does not select any file ... undefined in 0.000s
+    Then no file is selected ... undefined in 0.000s
+    Then toast message "❌ Error al cargar CSV" is displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Download Layout Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:45
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Download Layout Success
+    Given user is on Products page ... undefined in 0.000s
+    When user clicks "📥 Descargar Layout" button ... undefined in 0.000s
+    Then downloadProductCSVLayout function is called ... undefined in 0.000s
+    And toast message for successful layout download is displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="Download Layout Error" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:51
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Download Layout Error
+    Given user is on Products page ... undefined in 0.000s
+    When user clicks "📥 Descargar Layout" button ... undefined in 0.000s
+    Then an error occurs while downloading the layout ... undefined in 0.000s
+    Then toast message "❌ No se pudo descargar el layout" is displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="New Product Modal Open Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given user is on Products page ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:57
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: New Product Modal Open Success
+    Given user is on Products page ... undefined in 0.000s
+    When user clicks "➕ Nuevo Producto" button ... undefined in 0.000s
+    Then ProductModal opens ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="New Product Modal Close Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given ProductModal is open ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:62
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: New Product Modal Close Success
+    Given ProductModal is open ... undefined in 0.000s
+    When user clicks close button or presses escape key ... undefined in 0.000s
+    Then ProductModal closes ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="New Product Modal Success" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given ProductModal is open ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:67
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: New Product Modal Success
+    Given ProductModal is open ... undefined in 0.000s
+    And user fills the form and submits it correctly ... undefined in 0.000s
+    Then product is added successfully ... undefined in 0.000s
+    And toast message for successful addition is displayed ... undefined in 0.000s
+    And products are reloaded ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Products_ui.Products UI" name="New Product Modal Error" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given ProductModal is open ... undefined in 0.000s
+Location: tests/features/Products_ui.feature:74
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: New Product Modal Error
+    Given ProductModal is open ... undefined in 0.000s
+    And user fills the form with invalid data and submits it ... undefined in 0.000s
+    Then an error occurs while adding the product ... undefined in 0.000s
+    Then toast message "❌ Error al agregar el producto" is displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

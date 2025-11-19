@@ -1,0 +1,151 @@
+<testsuite name="companies_api.Companies API" tests="9" errors="9" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.753005" hostname="17911e10158c"><testcase classname="companies_api.Companies API" name="Get all companies with valid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a GET request to "/companies" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get all companies with valid parameters
+    Given I send a GET request to "/companies" ... undefined in 0.000s
+    When I provide valid headers and an empty query string ... undefined in 0.000s
+    Then status code should be 200 OK ... undefined in 0.000s
+    And response body contains a list of companies objects ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Get single company by id with valid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a GET request to "/companies/{company_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:10
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get single company by id with valid parameters
+    Given I send a GET request to "/companies/{company_id}" ... undefined in 0.000s
+    And I provide valid headers ... undefined in 0.000s
+    Then status code should be 200 OK ... undefined in 0.000s
+    And response body contains the specified company object ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Get single company by id with invalid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a GET request to "/companies/{invalid_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:16
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get single company by id with invalid parameters
+    Given I send a GET request to "/companies/{invalid_id}" ... undefined in 0.000s
+    And I provide valid headers ... undefined in 0.000s
+    Then status code should be 404 Not Found ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Create a new company with valid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a POST request to "/companies" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:21
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Create a new company with valid parameters
+    Given I send a POST request to "/companies" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 201 Created ... undefined in 0.000s
+    And response body contains the newly created company object ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Create a new company with missing required parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a POST request to "/companies" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:27
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Create a new company with missing required parameters
+    Given I send a POST request to "/companies" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 400 Bad Request ... undefined in 0.000s
+    And response body contains error messages for missing fields ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Update a company with valid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a PATCH request to "/companies/{company_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:33
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update a company with valid parameters
+    Given I send a PATCH request to "/companies/{company_id}" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 200 OK ... undefined in 0.000s
+    And response body contains the updated company object ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Update a company with missing required parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a PATCH request to "/companies/{company_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:39
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update a company with missing required parameters
+    Given I send a PATCH request to "/companies/{company_id}" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 400 Bad Request ... undefined in 0.000s
+    And response body contains error messages for missing fields ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Delete a company with valid parameters" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a DELETE request to "/companies/{company_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:45
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Delete a company with valid parameters
+    Given I send a DELETE request to "/companies/{company_id}" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 204 No Content ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="companies_api.Companies API" name="Attempt to delete a non-existing company" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I send a DELETE request to "/companies/{non_existing_id}" ... undefined in 0.000s
+Location: tests/features/companies_api.feature:50
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Attempt to delete a non-existing company
+    Given I send a DELETE request to "/companies/{non_existing_id}" ... undefined in 0.000s
+    And I provide valid headers with authorization token ... undefined in 0.000s
+    Then status code should be 404 Not Found ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

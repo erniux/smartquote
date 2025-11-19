@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Auto-generated from behave --dry-run snippets
 from behave import given, when, then
+from playwright.sync_api import sync_playwright
 
 @given(u'the user is authenticated as a manager or admin')
 def step_impl(context):

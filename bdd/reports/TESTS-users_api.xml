@@ -1,0 +1,92 @@
+<testsuite name="users_api.Users API" tests="5" errors="5" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.855882" hostname="17911e10158c"><testcase classname="users_api.Users API" name="Register a new User with valid credentials" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user hasn't registered before ... undefined in 0.000s
+Location: tests/features/users_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Register a new User with valid credentials
+    Given the user hasn't registered before ... undefined in 0.000s
+    When I send a POST request to "/users/" with parameters: ... undefined in 0.000s
+      | username | required |
+      | password | required |
+      | email    | required |
+    Then the response status code should be 201 Created ... undefined in 0.000s
+    And the response body should contain the message: "Usuario creado correctamente" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="users_api.Users API" name="Register a new User with existing username" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user hasn't registered before but the username already exists ... undefined in 0.000s
+Location: tests/features/users_api.feature:13
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Register a new User with existing username
+    Given the user hasn't registered before but the username already exists ... undefined in 0.000s
+    When I send a POST request to "/users/" with parameters: ... undefined in 0.000s
+      | username | required |
+      | password | required |
+      | email    | required |
+    Then the response status code should be 400 Bad Request ... undefined in 0.000s
+    And the response body should contain the error: "Usuario ya existe" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="users_api.Users API" name="Logout an authenticated user" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is already authenticated ... undefined in 0.000s
+Location: tests/features/users_api.feature:22
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Logout an authenticated user
+    Given the user is already authenticated ... undefined in 0.000s
+    When I send a POST request to "/logout/" with a valid refresh token ... undefined in 0.000s
+    Then the response status code should be 205 Reset Content ... undefined in 0.000s
+    And the response body should contain the message: "Sesión cerrada" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="users_api.Users API" name="Logout with invalid refresh token" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is already authenticated but the refresh token is invalid ... undefined in 0.000s
+Location: tests/features/users_api.feature:28
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Logout with invalid refresh token
+    Given the user is already authenticated but the refresh token is invalid ... undefined in 0.000s
+    When I send a POST request to "/logout/" with an invalid refresh token ... undefined in 0.000s
+    Then the response status code should be 400 Bad Request ... undefined in 0.000s
+    And the response body should contain the error: "Token inválido" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="users_api.Users API" name="Retrieve profile of an authenticated user" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is already authenticated ... undefined in 0.000s
+Location: tests/features/users_api.feature:34
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve profile of an authenticated user
+    Given the user is already authenticated ... undefined in 0.000s
+    When I send a GET request to "/profile/" ... undefined in 0.000s
+    Then the response status code should be 200 OK ... undefined in 0.000s
+    And the response body should contain the user's id, username, email, role and company name if the user belongs to a company; otherwise it should contain None for company. ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

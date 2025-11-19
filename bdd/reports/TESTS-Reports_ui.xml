@@ -1,0 +1,145 @@
+<testsuite name="Reports_ui.Reports UI" tests="9" errors="9" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.731349" hostname="17911e10158c"><testcase classname="Reports_ui.Reports UI" name="Navigation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the homepage ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Navigation
+    Given the user is on the homepage ... undefined in 0.000s
+    When the user clicks on "Reports" in the navigation bar ... undefined in 0.000s
+    Then the user should be redirected to the QuotationsReport page ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="Login" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is not logged in ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:9
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Login
+    Given the user is not logged in ... undefined in 0.000s
+    When the user tries to access a protected report page (QuotationsReport or SalesReport) ... undefined in 0.000s
+    Then the user should be redirected to the login page ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="Logout" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is logged in ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:14
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Logout
+    Given the user is logged in ... undefined in 0.000s
+    When the user clicks on "Logout" in the navigation bar ... undefined in 0.000s
+    Then the user should be logged out and redirected to the homepage ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="QuotationsReport - Fetch Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the QuotationsReport page ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:19
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: QuotationsReport - Fetch Data
+    Given the user is on the QuotationsReport page ... undefined in 0.000s
+    When the user does not select a status filter ... undefined in 0.000s
+    Then the system should fetch all quotations and display them in the table ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="QuotationsReport - Filter by Status" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the QuotationsReport page ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:24
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: QuotationsReport - Filter by Status
+    Given the user is on the QuotationsReport page ... undefined in 0.000s
+    When the user selects a specific status filter ... undefined in 0.000s
+    Then the system should fetch quotations with that status and display them in the table ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="QuotationsReport - Export CSV" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the QuotationsReport page with filtered quotations ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:29
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: QuotationsReport - Export CSV
+    Given the user is on the QuotationsReport page with filtered quotations ... undefined in 0.000s
+    When the user clicks on "Export CSV" ... undefined in 0.000s
+    Then a CSV file should be downloaded containing the displayed data ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="SalesReport - Fetch Data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the SalesReport page ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:34
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: SalesReport - Fetch Data
+    Given the user is on the SalesReport page ... undefined in 0.000s
+    When the user does not set any date filter ... undefined in 0.000s
+    Then the system should fetch all sales and display them in the table ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="SalesReport - Filter by Date Range" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the SalesReport page ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:39
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: SalesReport - Filter by Date Range
+    Given the user is on the SalesReport page ... undefined in 0.000s
+    When the user sets a start and end date for the filter ... undefined in 0.000s
+    Then the system should fetch sales within that date range and display them in the table ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Reports_ui.Reports UI" name="SalesReport - Export CSV" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the SalesReport page with filtered sales ... undefined in 0.000s
+Location: tests/features/Reports_ui.feature:44
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: SalesReport - Export CSV
+    Given the user is on the SalesReport page with filtered sales ... undefined in 0.000s
+    When the user clicks on "Export CSV" ... undefined in 0.000s
+    Then a CSV file should be downloaded containing the displayed data ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

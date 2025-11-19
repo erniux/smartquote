@@ -1,18 +1,15 @@
-Feature: Quotation Management # tests/features/quotations/api/quotations_api.feature:1
+Feature: Jewelry Quotation and Search # tests/features/Quotations_ui.feature:1
 
-  Scenario: Generate Sale from Quotation (Admin Role)                                      # tests/features/quotations/api/quotations_api.feature:3
-    Given I am authenticated as an admin user                                              # None
-    And I have a quotation created with valid details                                      # None
-    When I send a GET request to the API endpoint for generating a sale from the quotation # None
-    Then I should receive a successful response                                            # None
-    And a new sale should be created associated with the quotation                         # None
-    And the status of the quotation should change to 'sold'                                # None
+  Scenario: Requesting a quotation                                                          # tests/features/Quotations_ui.feature:3
+    Given the user is on the quote form page                                                # None
+    When the user enters their name, email, selects a jewelry type, and enters the quantity # None
+    And the user clicks the "Submit" button                                                 # None
+    Then the request should be sent to the server                                           # None
+    And the user should receive a quotation response                                        # None
 
-  Scenario: Generate Sale from Quotation (Company Member Role)                             # tests/features/quotations/api/quotations_api.feature:11
-    Given I am authenticated as a company member user                                      # None
-    And I have a quotation created with valid details that I have access to                # None
-    When I send a GET request to the API endpoint for generating a sale from the quotation # None
-    Then I should receive a successful response                                            # None
-    And a new sale should be created associated with the quotation                         # None
-    And the status of the quotation should change to 'sold'                                # None
+  Scenario: Searching for products                                                          # tests/features/Quotations_ui.feature:10
+    Given the user is on the product search page                                            # None
+    When the user enters a product name in the search field                                 # None
+    Then the system should display the matching product results                             # None
+    And each result should include the product name and current metal price (if applicable) # None
 

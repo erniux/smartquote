@@ -1,0 +1,96 @@
+<testsuite name="Metals_ui.Metals UI" tests="6" errors="6" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.679296" hostname="17911e10158c"><testcase classname="Metals_ui.Metals UI" name="Navigation and layout loading" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user navigates to the "Metals" page ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Navigation and layout loading
+    Given the user navigates to the "Metals" page ... undefined in 0.000s
+    Then the page title should display "Metales y Divisas" ... undefined in 0.000s
+    And a banner with exchange rate information is visible ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Metals_ui.Metals UI" name="Search functionality" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user enters "gold" in the search bar ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:9
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Search functionality
+    Given the user enters "gold" in the search bar ... undefined in 0.000s
+    When the user clicks the search button or presses enter ... undefined in 0.000s
+    Then only gold related metals and currencies are displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Metals_ui.Metals UI" name="Currency selection" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user selects MXN as currency ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:14
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Currency selection
+    Given the user selects MXN as currency ... undefined in 0.000s
+    When the user navigates to the Metals page again ... undefined in 0.000s
+    Then the displayed prices should be converted to Mexican pesos ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Metals_ui.Metals UI" name="Error state for empty data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given no metals or currencies are available ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:19
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Error state for empty data
+    Given no metals or currencies are available ... undefined in 0.000s
+    When the user navigates to the Metals page ... undefined in 0.000s
+    Then the message "No hay metales registrados." is displayed ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Metals_ui.Metals UI" name="Success/error messages" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user tries to update exchange rate ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:24
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Success/error messages
+    Given the user tries to update exchange rate ... undefined in 0.000s
+    Then a success toast message with the updated exchange rate should be displayed ... undefined in 0.000s
+    And an error toast message should be displayed if an error occurs during the process ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Metals_ui.Metals UI" name="Route guards" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user navigates to the Metals page without being authenticated ... undefined in 0.000s
+Location: tests/features/Metals_ui.feature:29
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Route guards
+    Given the user navigates to the Metals page without being authenticated ... undefined in 0.000s
+    Then the user should be redirected to the login page or display a message about authentication required ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

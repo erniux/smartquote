@@ -1,0 +1,36 @@
+<testsuite name="Quotations_ui.Jewelry Quotation and Search" tests="2" errors="2" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:21:23.782191" hostname="17911e10158c"><testcase classname="Quotations_ui.Jewelry Quotation and Search" name="Requesting a quotation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the quote form page ... undefined in 0.000s
+Location: tests/features/Quotations_ui.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Requesting a quotation
+    Given the user is on the quote form page ... undefined in 0.000s
+    When the user enters their name, email, selects a jewelry type, and enters the quantity ... undefined in 0.000s
+    And the user clicks the "Submit" button ... undefined in 0.000s
+    Then the request should be sent to the server ... undefined in 0.000s
+    And the user should receive a quotation response ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Quotations_ui.Jewelry Quotation and Search" name="Searching for products" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is on the product search page ... undefined in 0.000s
+Location: tests/features/Quotations_ui.feature:11
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Searching for products
+    Given the user is on the product search page ... undefined in 0.000s
+    When the user enters a product name in the search field ... undefined in 0.000s
+    Then the system should display the matching product results ... undefined in 0.000s
+    And each result should include the product name and current metal price (if applicable) ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

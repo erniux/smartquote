@@ -1,0 +1,82 @@
+<testsuite name="services_api.Services API" tests="5" errors="5" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.840082" hostname="17911e10158c"><testcase classname="services_api.Services API" name="Retrieve a metal price with symbol parameter" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the client sends a GET request to "/metal-price/" with "symbol" parameter ... undefined in 0.000s
+Location: tests/features/services_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve a metal price with symbol parameter
+    Given the client sends a GET request to "/metal-price/" with "symbol" parameter ... undefined in 0.000s
+    And the provided symbol exists in database ... undefined in 0.000s
+    When the server processes the request ... undefined in 0.000s
+    Then it returns the metal price data serialized as JSON ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="services_api.Services API" name="Retrieve a metal price not found in database" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the client sends a GET request to "/metal-price/" with a non-existing symbol ... undefined in 0.000s
+Location: tests/features/services_api.feature:10
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve a metal price not found in database
+    Given the client sends a GET request to "/metal-price/" with a non-existing symbol ... undefined in 0.000s
+    When the server processes the request ... undefined in 0.000s
+    Then it returns an error message "No se encontró precio para [symbol]" as JSON ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="services_api.Services API" name="Get prices from Yahoo Finance" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the client sends a GET request to "/yfinance-prices/" ... undefined in 0.000s
+Location: tests/features/services_api.feature:15
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get prices from Yahoo Finance
+    Given the client sends a GET request to "/yfinance-prices/" ... undefined in 0.000s
+    When the server processes the request ... undefined in 0.000s
+    Then it returns the latest metal prices from Yahoo Finance as JSON ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="services_api.Services API" name="Update metal prices from database" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the client sends a POST request to "/update-prices/" ... undefined in 0.000s
+Location: tests/features/services_api.feature:20
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update metal prices from database
+    Given the client sends a POST request to "/update-prices/" ... undefined in 0.000s
+    When the server processes the request and executes `update_prices` command ... undefined in 0.000s
+    Then it returns a success message "Precios y tasas actualizados correctamente" as JSON ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="services_api.Services API" name="Get prices locales (converted to MXN or another currency)" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the client sends a GET request to "/price-local/" ... undefined in 0.000s
+Location: tests/features/services_api.feature:25
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Get prices locales (converted to MXN or another currency)
+    Given the client sends a GET request to "/price-local/" ... undefined in 0.000s
+    When the server processes the request ... undefined in 0.000s
+    Then it returns the metal prices with their corresponding local prices serialized as JSON ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

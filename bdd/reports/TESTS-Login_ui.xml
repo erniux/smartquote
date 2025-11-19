@@ -1,0 +1,99 @@
+<testsuite name="Login_ui.Login UI" tests="6" errors="6" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.663085" hostname="17911e10158c"><testcase classname="Login_ui.Login UI" name="Valid login with correct credentials" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user navigates to the login page ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Valid login with correct credentials
+    Given the user navigates to the login page ... undefined in 0.000s
+    When the user enters valid username and password ... undefined in 0.000s
+    And the user clicks on the "Iniciar sesión" button ... undefined in 0.000s
+    Then the system should display a success message and navigate to "/quotations" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Login_ui.Login UI" name="Invalid login with incorrect credentials" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user navigates to the login page ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:10
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Invalid login with incorrect credentials
+    Given the user navigates to the login page ... undefined in 0.000s
+    When the user enters invalid username or password ... undefined in 0.000s
+    And the user clicks on the "Iniciar sesión" button ... undefined in 0.000s
+    Then the system should display an error message ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Login_ui.Login UI" name="Login attempt without entering username or password" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user navigates to the login page ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:16
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Login attempt without entering username or password
+    Given the user navigates to the login page ... undefined in 0.000s
+    When the user clicks on the "Iniciar sesión" button without filling out the form ... undefined in 0.000s
+    Then the system should display an error message indicating that all fields are required ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Login_ui.Login UI" name="Login attempt after reaching max attempts limit" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user has reached the max number of failed login attempts ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:21
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Login attempt after reaching max attempts limit
+    Given the user has reached the max number of failed login attempts ... undefined in 0.000s
+    When the user enters invalid credentials and clicks on the "Iniciar sesión" button ... undefined in 0.000s
+    Then the system should display an error message indicating that the account is temporarily locked due to too many failed login attempts ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Login_ui.Login UI" name="Login attempt after unlocking the account" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user's account has been temporarily locked due to too many failed login attempts ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:26
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Login attempt after unlocking the account
+    Given the user's account has been temporarily locked due to too many failed login attempts ... undefined in 0.000s
+    When the user enters valid credentials and clicks on the "Iniciar sesión" button ... undefined in 0.000s
+    Then the system should unlock the account and display a success message, navigating to "/quotations" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="Login_ui.Login UI" name="Login attempt while offline" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given the user is offline ... undefined in 0.000s
+Location: tests/features/Login_ui.feature:31
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Login attempt while offline
+    Given the user is offline ... undefined in 0.000s
+    When the user enters valid credentials and clicks on the "Iniciar sesión" button ... undefined in 0.000s
+    Then the system should display an error message indicating that the network connection is unavailable ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

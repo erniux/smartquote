@@ -1,0 +1,152 @@
+<testsuite name="invoices_api.Invoices API" tests="9" errors="9" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.792000" hostname="17911e10158c"><testcase classname="invoices_api.Invoices API" name="Valid Invoice Creation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given a valid user is authenticated ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Valid Invoice Creation
+    Given a valid user is authenticated ... undefined in 0.000s
+    And a sale exists with quotation having a customer ... undefined in 0.000s
+    When a POST request is sent to /invoices with the sale id, invoice number, issue date, subtotal, tax, and total as JSON body ... undefined in 0.000s
+    Then the response status code should be 201 Created ... undefined in 0.000s
+    And the response contains an invoice object with correct fields ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Incorrect Sale Reference" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given a valid user is authenticated ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:11
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Incorrect Sale Reference
+    Given a valid user is authenticated ... undefined in 0.000s
+    When a POST request is sent to /invoices with an invalid sale id, invoice number, issue date, subtotal, tax, and total as JSON body ... undefined in 0.000s
+    Then the response status code should be 400 Bad Request ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Invoice Number Validation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given a valid user is authenticated ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:16
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Invoice Number Validation
+    Given a valid user is authenticated ... undefined in 0.000s
+    And the next invoice number already exists ... undefined in 0.000s
+    When a POST request is sent to /invoices with the same invoice number as JSON body ... undefined in 0.000s
+    Then the response status code should be 409 Conflict ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Invoice Number Generation" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given a valid user is authenticated ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:22
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Invoice Number Generation
+    Given a valid user is authenticated ... undefined in 0.000s
+    When a GET request is sent to /invoices/next-number ... undefined in 0.000s
+    Then the response status code should be 200 OK ... undefined in 0.000s
+    And the response contains the next invoice number ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Retrieve Invoice by ID" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given an existing invoice ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:28
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve Invoice by ID
+    Given an existing invoice ... undefined in 0.000s
+    When a GET request is sent to /invoices/{id} ... undefined in 0.000s
+    Then the response status code should be 200 OK ... undefined in 0.000s
+    And the response contains the correct invoice object ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Update Existing Invoice" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given an existing invoice ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:34
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update Existing Invoice
+    Given an existing invoice ... undefined in 0.000s
+    When a PATCH request is sent to /invoices/{id} with updated subtotal, tax, and total as JSON body ... undefined in 0.000s
+    Then the response status code should be 200 OK ... undefined in 0.000s
+    And the response contains the updated invoice object ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Delete Invoice" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given an existing invoice ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:40
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Delete Invoice
+    Given an existing invoice ... undefined in 0.000s
+    When a DELETE request is sent to /invoices/{id} ... undefined in 0.000s
+    Then the response status code should be 204 No Content ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Retrieve Invoices List" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given multiple existing invoices ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:45
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve Invoices List
+    Given multiple existing invoices ... undefined in 0.000s
+    When a GET request is sent to /invoices ... undefined in 0.000s
+    Then the response status code should be 200 OK ... undefined in 0.000s
+    And the response contains a list of all invoices objects ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="invoices_api.Invoices API" name="Invalid Invoice ID" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given an invalid invoice id ... undefined in 0.000s
+Location: tests/features/invoices_api.feature:51
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Invalid Invoice ID
+    Given an invalid invoice id ... undefined in 0.000s
+    When a GET request is sent to /invoices/{id} or PATCH, DELETE requests are sent to /invoices/{id} ... undefined in 0.000s
+    Then the response status code should be 404 Not Found ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

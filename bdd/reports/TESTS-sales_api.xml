@@ -1,0 +1,176 @@
+<testsuite name="sales_api.Sales API" tests="9" errors="9" failures="0" skipped="0" time="0.0" timestamp="2025-11-01T01:14:29.823591" hostname="17911e10158c"><testcase classname="sales_api.Sales API" name="List sales with pagination and filtering" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:4
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: List sales with pagination and filtering
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a GET request to '/api/sales/' ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains a JSON object with keys "count", "next", "previous", and "results" ... undefined in 0.000s
+    And each result in "results" contains keys "id", "quotation_id", "quotation_name", "quotation_email", "total_amount", "status", "sale_date", "delivery_date", "warranty_end", "notes" ... undefined in 0.000s
+    But if a filter query parameter "status" is provided, the results should only contain sales with the specified status ... undefined in 0.000s
+    And if pagination query parameters "page" and "page_size" are provided, the results should be paginated accordingly ... undefined in 0.000s
+    And if no filter or pagination parameters are provided, all sales should be returned (default page is 1, default page size is 20) ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Create a new sale with valid data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:15
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Create a new sale with valid data
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a POST request to '/api/sales/' with valid JSON data for a new sale ... undefined in 0.000s
+    Then the status code should be 201 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains a JSON object with keys "id", "quotation_id", "total_amount", "status", "sale_date", "delivery_date", "warranty_end", "notes" ... undefined in 0.000s
+    And if delivery_date and warranty_end are not provided, they should be set to their default values ... undefined in 0.000s
+    And if I send a GET request to '/api/sales/{id}', the returned sale should match the created one ... undefined in 0.000s
+    And if I send a PUT request to '/api/sales/{id}/update_status' with a valid status, the sale's status should be updated ... undefined in 0.000s
+    And if I send a PUT request to '/api/sales/{id}/set_delivery_and_warranty' with valid delivery_days and warranty_days, the sale's delivery_date and warranty_end should be set accordingly ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Update a sale with valid data" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:26
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Update a sale with valid data
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a PUT request to '/api/sales/{id}' with valid JSON data for updating a sale ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains a JSON object with keys "id", "quotation_id", "total_amount", "status", "sale_date", "delivery_date", "warranty_end", "notes" ... undefined in 0.000s
+    And if I send a GET request to '/api/sales/{id}', the returned sale should match the updated one ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Retrieve an invoice for a sale" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:34
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve an invoice for a sale
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a GET request to '/api/sales/{sale_id}/invoice/' ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And if there is no invoice for the sale, the response should contain an empty JSON object ... undefined in 0.000s
+    And if there is an invoice for the sale, the response contains a JSON object with keys "id", "invoice_number", "subtotal", "tax", and "total" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Mark a sale as delivered" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:42
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Mark a sale as delivered
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a POST request to '/api/sales/{id}/mark_delivered' ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And if I send a GET request to '/api/sales/{id}', the returned sale's status should be "delivered" and its delivery_date should be set to the current date ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Mark a sale as closed, generate invoice, and send email" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:49
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Mark a sale as closed, generate invoice, and send email
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a POST request to '/api/sales/{id}/mark_closed' ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And if I send a GET request to '/api/sales/{id}', the returned sale's status should be "closed" ... undefined in 0.000s
+    And if I check the invoices, there should be an invoice for the sale with the correct subtotal, tax, and total ... undefined in 0.000s
+    And if I check my emails, I should receive an email with the invoice as an attachment ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Create a new payment for a sale" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:58
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Create a new payment for a sale
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a POST request to '/api/sales/{id}/add_payment' with valid JSON data for a new payment ... undefined in 0.000s
+    Then the status code should be 201 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains a JSON object with keys "id", "payment_date", "amount", "method" ... undefined in 0.000s
+    And if I send a GET request to '/api/sales/{id}', the returned sale's payments should contain the new payment ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Retrieve a list of payments for a sale" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as an admin user ... undefined in 0.000s
+Location: tests/features/sales_api.feature:66
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Retrieve a list of payments for a sale
+    Given I am authenticated as an admin user ... undefined in 0.000s
+    When I send a GET request to '/api/sales/{id}/payments/' ... undefined in 0.000s
+    Then the status code should be 200 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains a JSON array of payments with keys "id", "payment_date", "amount", "method" ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="sales_api.Sales API" name="Check permissions for updating sales, adding payments, and marking as delivered or closed" status="error" time="0"><error type="NoneType" message="None">
+<![CDATA[
+Failing step: Given I am authenticated as a user without proper permissions ... undefined in 0.000s
+Location: tests/features/sales_api.feature:73
+None]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+  Scenario: Check permissions for updating sales, adding payments, and marking as delivered or closed
+    Given I am authenticated as a user without proper permissions ... undefined in 0.000s
+    When I try to perform any of the following actions: create/update a sale, add a payment, or mark as delivered or closed ... undefined in 0.000s
+    Then the status code should be 403 ... undefined in 0.000s
+    And the content-type should be 'application/json' ... undefined in 0.000s
+    And the response contains an error message indicating that the user does not have permission to perform the action ... undefined in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>
